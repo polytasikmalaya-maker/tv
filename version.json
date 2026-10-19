@@ -1,5 +1,5 @@
 {
-  "version": "20261019_v51",
-  "updatedAt": "2026-10-19T15:20:00+07:00",
-  "description": "Perbaikan anti-flicker papan SA dan Teknisi, isolasi suara ketat berdasarkan cabang/area monitor, responsif Menu Utama tanpa terpotong, text-wrapping tanpa truncate, dan modal input manual SA rapi."
+  "version": "20261019_v53",
+  "updatedAt": "2026-10-19T17:25:00+07:00",
+  "description": "Perbaikan anti double-booking: normalisasi dinamis siteId/siteCode dari Master_Sites, validasi ketersediaan slot sebelum submit, dan penomoran antrian/ID booking unik tanpa bentrok."
 }

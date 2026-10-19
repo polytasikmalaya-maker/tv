@@ -919,7 +919,7 @@
     // ==============================================================
     // KONFIGURASI UTAMA & MASTER SITES DENGAN KODE
     // ==============================================================
-    const CURRENT_APP_VERSION = '20261019_v51';
+    const CURRENT_APP_VERSION = '20261019_v53';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
@@ -927,7 +927,17 @@
     const GOOGLE_SPREADSHEET_ID = '1JmAKxJEG2TGkx2P9piXMijwhwyYbX16aVoYn4rsDcww';
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyBCztuCRN4e3CzDZOC3Q3zbNSVzb9Pbx88VWQPsoKcPfQsSC10R00pjNm_NmstrBgYqQ/exec';
     
-    let SITES = [];
+    const DEFAULT_FALLBACK_SITES = [
+      { id: 'tasik', code: 'TSM', name: 'Polytron SC Tasik', city: 'Tasik', address: 'Jl. Ir. H. Juanda No.29, Tasikmalaya', phone: '081234567890', badge: 'Cabang Resmi', workDays: '1,2,3,4,5,6' },
+      { id: 'bandung-soekarno-hatta', code: 'BDG', name: 'Polytron SC Bandung Soekarno Hatta', city: 'Bandung', address: 'Jl. Soekarno Hatta No.338, Bandung', phone: '081234567891', badge: 'Cabang Resmi', workDays: '1,2,3,4,5,6' },
+      { id: 'bandung-padjajaran', code: 'BDU', name: 'Polytron SC Bandung Padjajaran', city: 'Bandung', address: 'Jl. Padjajaran No.88, Bandung', phone: '081234567892', badge: 'Cabang Resmi', workDays: '1,2,3,4,5,6' },
+      { id: 'cirebon', code: 'CRB', name: 'Polytron SC Cirebon', city: 'Cirebon', address: 'Jl. Brigjen Dharsono No.12, Cirebon', phone: '081234567893', badge: 'Cabang Resmi', workDays: '1,2,3,4,5,6' },
+      { id: 'semarang', code: 'SMG', name: 'Polytron SC Semarang', city: 'Semarang', address: 'Jl. Majapahit No.112, Semarang', phone: '081234567894', badge: 'Cabang Resmi', workDays: '1,2,3,4,5,6' },
+      { id: 'kudus', code: 'KDS', name: 'Polytron SC Kudus', city: 'Kudus', address: 'Jl. Jendral Sudirman No.54, Kudus', phone: '081234567895', badge: 'Kantor Pusat & Servis', workDays: '1,2,3,4,5,6' },
+      { id: 'surabaya-rungkut', code: 'SBY', name: 'Polytron SC Surabaya Rungkut', city: 'Surabaya', address: 'Jl. Raya Rungkut No.27, Surabaya', phone: '081234567896', badge: 'Cabang Resmi', workDays: '1,2,3,4,5,6' }
+    ];
+
+    let SITES = [...DEFAULT_FALLBACK_SITES];
     try {
       const cached = localStorage.getItem('POLYTRON_MASTER_SITES_CACHE_V2');
       if (cached) {
@@ -1800,7 +1810,23 @@
 
       const sType = (stall === 'express' || String(item.serviceType || '').toLowerCase() === 'express') ? 'express' : 'reguler';
       const slot = String(item.slot || '08.30').replace(':', '.');
-      const siteId = String(item.siteId || 'tasikmalaya').toLowerCase();
+      const siteRaw = String(item.siteId || '').toLowerCase().trim();
+      let matchSite = null;
+      if (siteRaw) {
+        matchSite = SITES.find(s => 
+          s.id.toLowerCase() === siteRaw || 
+          isSameSite(s.id, siteRaw) || 
+          (s.code && s.code.toLowerCase() === siteRaw)
+        );
+      }
+      const siteId = matchSite ? matchSite.id : (siteRaw || (SITES[0] ? SITES[0].id : 'tasik'));
+      const siteCode = matchSite ? (matchSite.code || getSiteCode(matchSite.id)) : (item.siteCode || getSiteCode(siteId));
+
+      const estHours = item.estimatedHours || (item.level === 'Level 3' ? 3 : (item.level === 'Level 2' ? 2 : 1));
+      let secondarySlot = item.secondarySlot || '';
+      if (!secondarySlot && stall !== 'express' && estHours >= 2) {
+        secondarySlot = getNextRegularSlot ? getNextRegularSlot(slot) : '';
+      }
 
       return {
         id: item.id || `PLY-${Date.now()}`,
@@ -1817,10 +1843,10 @@
         status: s,
         date: item.date || getLocalDateIso(),
         siteId: siteId,
-        siteCode: item.siteCode || getSiteCode(siteId),
+        siteCode: siteCode,
         level: item.level || 'Level 1',
-        estimatedHours: item.estimatedHours || (item.level === 'Level 2' ? 2 : (item.level === 'Level 3' ? 3 : 1)),
-        secondarySlot: item.secondarySlot || ''
+        estimatedHours: estHours,
+        secondarySlot: secondarySlot
       };
     }
 
@@ -1972,8 +1998,31 @@
       // 3. Simpan dan render hasil sinkronisasi
       if (success && remoteBookings.length > 0) {
         lastSheetSyncTime = new Date();
+        const currentLocal = loadBookings();
+        const mergedMap = new Map();
+
+        remoteBookings.forEach(rb => {
+          const key = rb.id || rb.queueNumber;
+          if (key) mergedMap.set(key, rb);
+        });
+
+        currentLocal.forEach(lb => {
+          const key = lb.id || lb.queueNumber;
+          if (key && !mergedMap.has(key)) {
+            mergedMap.set(key, lb);
+          } else if (key && mergedMap.has(key)) {
+            const remote = mergedMap.get(key);
+            mergedMap.set(key, {
+              ...remote,
+              secondarySlot: remote.secondarySlot || lb.secondarySlot || '',
+              siteCode: remote.siteCode || lb.siteCode || getSiteCode(remote.siteId)
+            });
+          }
+        });
+
+        const mergedList = Array.from(mergedMap.values());
         const curJson = localStorage.getItem(STORAGE_KEY) || '[]';
-        const newJson = JSON.stringify(remoteBookings);
+        const newJson = JSON.stringify(mergedList);
         if (curJson !== newJson) {
           localStorage.setItem(STORAGE_KEY, newJson);
           renderScheduleTable();
