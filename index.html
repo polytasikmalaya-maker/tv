@@ -51,36 +51,28 @@
       min-height: 100%;
       width: 100%;
       overflow: hidden;
-      background-color: #380202;
-      background: linear-gradient(
-        to right,
-        #380202 0%,
-        #5a0606 20%,
-        #7e0a0a 40%,
-        #a81212 60%,
-        #cf1b1b 80%,
-        #ef4444 95%,
-        #f43f5e 100%
-      );
-      background-attachment: fixed;
-      color: #0f172a;
+      background-color: #ffffff !important;
+      background: #ffffff !important;
+      color: #0c2340;
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Container Utama Monitor TV: Elastis 100vh Pas Tanpa Scrollbar */
+    /* Container Utama Monitor TV: Elastis 100vh Pas Tanpa Scrollbar (Portrait Standing TV Kiosk) */
     #tvContainer {
       height: 100vh;
       width: 100vw;
       max-height: 100vh;
       overflow: hidden;
-      padding: 2mm 3.5mm 1.5mm 3.5mm;
+      padding: 10px 14px 8px 14px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 2mm;
+      gap: 8px;
+      background-color: #ffffff !important;
+      background: #ffffff !important;
     }
 
     /* ============================================================== */
@@ -101,57 +93,70 @@
     }
 
     .tv-logo-polytron {
-      color: #ffffff;
+      color: #0c2340;
       font-weight: 900;
-      font-size: 1.6rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+      font-size: 1.55rem;
+      letter-spacing: 0.16em;
       line-height: 1.1;
       display: flex;
       align-items: center;
-      gap: 8px;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      gap: 7px;
     }
 
     .tv-logo-polytron span.dot {
       display: inline-block;
-      width: 9px;
-      height: 9px;
+      width: 8px;
+      height: 8px;
       border-radius: 1px;
-      background-color: #ffffff;
+      background-color: #0c2340;
+    }
+
+    .polytron-n {
+      display: inline-block;
+      text-transform: lowercase !important;
+      font-size: 1.35em;
+      line-height: 0.72;
+      vertical-align: -0.04em;
+      font-weight: 900;
     }
 
     .tv-title {
-      font-size: 1.78rem;
+      font-size: 1.85rem;
       font-weight: 900;
-      color: #ffffff;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-      margin-top: 1px;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      color: #0c2340;
+      letter-spacing: -0.01em;
+      line-height: 1.12;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .tv-title .tv-title-sub {
+      color: #0c2340;
+      display: block;
     }
 
     /* PILIHAN KATEGORI: REGULER ATAU EXPRESS */
     .tv-category-switcher {
       display: inline-flex;
       align-items: center;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 3px;
-      padding: 2px;
-      gap: 3px;
-      margin-top: 4px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 3px;
+      gap: 4px;
+      margin-top: 6px;
       width: fit-content;
+      box-shadow: 0 1px 3px rgba(15, 35, 65, 0.05);
     }
 
     .tv-cat-btn {
       background: transparent;
       border: none;
-      color: #fee2e2;
-      font-size: 0.82rem;
+      color: #475569;
+      font-size: 0.85rem;
       font-weight: 800;
-      padding: 4px 14px;
-      border-radius: 2px;
+      padding: 5px 14px;
+      border-radius: 4px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -161,14 +166,14 @@
     }
 
     .tv-cat-btn:hover {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.15);
+      color: #0c2340;
+      background: #f1f5f9;
     }
 
     .tv-cat-btn.active {
-      background: #ffffff;
-      color: #dc2626;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      background: #0c2340;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(12, 35, 64, 0.25);
     }
 
     .tv-time-block {
@@ -181,61 +186,58 @@
     .tv-date-text {
       font-size: 1.05rem;
       font-weight: 700;
-      color: #fee2e2;
+      color: #1e293b;
       letter-spacing: 0.02em;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
     }
 
     .tv-clock-text {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 2.25rem;
+      font-size: 2.5rem;
       font-weight: 900;
-      color: #ffffff;
-      letter-spacing: 0.05em;
+      color: #0c2e60;
+      letter-spacing: 0.04em;
       line-height: 1;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
     }
 
     .tv-controls-row {
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-top: 4px;
+      margin-top: 5px;
     }
 
-    /* Tombol Kontrol Kanan Atas (Sudut 90 Derajat Unsharp 3px) */
     .tv-btn {
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #ffffff;
-      font-size: 0.76rem;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid #bfdbfe;
+      color: #0c2340;
+      font-size: 0.78rem;
       font-weight: 800;
-      padding: 4px 12px;
-      border-radius: 3px;
+      padding: 4px 10px;
+      border-radius: 6px;
       cursor: pointer;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 1px 3px rgba(15, 35, 65, 0.05);
     }
 
     .tv-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
-      color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.5);
+      background: #e2e8f0;
+      border-color: #94a3b8;
+      color: #0c2340;
     }
 
     /* ============================================================== */
-    /* STATUS PILLS / LEGENDA (KONTRAS DI LATAR MERAH GRADASI)        */
+    /* STATUS PILLS / LEGENDA                                         */
     /* ============================================================== */
     .tv-legend-bar {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
       flex-wrap: wrap;
-      margin-top: 4px;
+      margin-top: 8px;
       flex-shrink: 0;
     }
 
@@ -245,35 +247,32 @@
       gap: 6px;
       font-size: 0.82rem;
       font-weight: 700;
-      color: #ffffff;
+      color: #334155;
       letter-spacing: 0.02em;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
     }
 
     .tv-legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 1px;
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
       display: inline-block;
       flex-shrink: 0;
-      border: 1px solid rgba(255, 255, 255, 0.4);
     }
 
-    .dot-terjadwal { background-color: #94a3b8; }
-    .dot-menunggu  { background-color: #fbbf24; }
-    .dot-dikerjakan{ background-color: #38bdf8; }
-    .dot-qc        { background-color: #c084fc; }
-    .dot-selesai   { background-color: #34d399; }
+    .dot-terjadwal { background-color: #cbd5e1; }
+    .dot-menunggu  { background-color: #eab308; }
+    .dot-dikerjakan{ background-color: #0284c7; }
+    .dot-qc        { background-color: #64748b; }
+    .dot-selesai   { background-color: #10b981; }
 
     /* ============================================================== */
-    /* TABEL MATRIX UTAMA (KARTU PUTIH BERSIH - EXACT 2 KOTAK/BARIS)  */
-    /* Sudut 90 Derajat (Unsharp 4px)                                 */
+    /* TABEL MATRIX UTAMA (KARTU PUTIH MINIMALIS BERSIH PERSIS FOTO)  */
     /* ============================================================== */
     .tv-table-card {
       background: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      border-radius: 4px; /* Sudut 90 derajat halus */
-      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.4), 0 8px 16px -6px rgba(0, 0, 0, 0.3);
+      border: 1.5px solid #bfdbfe;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(15, 35, 65, 0.08);
       overflow: hidden;
       flex: 1 1 0%;
       min-height: 0;
@@ -281,23 +280,21 @@
       flex-direction: column;
     }
 
-    /* HEADER TABEL: KOLOM WAKTU + 2 KOLOM KOTAK BERDAMPINGAN */
     .tv-table-header {
       display: grid;
-      grid-template-columns: 140px 1fr 1fr;
+      grid-template-columns: 125px 1fr 1fr;
       align-items: center;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      height: 38px;
-      min-height: 38px;
-      padding: 0 2mm;
-      gap: 2mm;
+      background: #e1effe;
+      border-bottom: 1.5px solid #bfdbfe;
+      height: 40px;
+      min-height: 40px;
+      padding: 0 10px;
+      gap: 10px;
       flex-shrink: 0;
       font-size: 0.88rem;
       font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #1e293b;
+      letter-spacing: 0.04em;
+      color: #0c2340;
     }
 
     .tv-th-col {
@@ -306,101 +303,106 @@
       flex-wrap: wrap;
       gap: 4px;
       overflow: hidden;
-      padding-left: 1mm;
       line-height: 1.2;
     }
 
     .tv-th-col.th-waktu {
-      color: #475569;
-      padding-left: 2mm;
+      color: #0c2340;
+      padding-left: 4px;
+      font-weight: 900;
     }
 
     .tv-th-main {
-      font-weight: 800;
+      font-weight: 900;
+      color: #0c2340;
       white-space: nowrap;
     }
 
     .tv-th-sub {
       color: #64748b;
-      font-weight: 700;
-      font-size: 0.78rem;
+      font-weight: 600;
+      font-size: 0.82rem;
       text-transform: none;
       white-space: nowrap;
     }
 
-    /* BODY TABEL: MENGISI PENUH SCREEN SECARA VERTIKAL ELASTIS */
+    /* BODY TABEL: MENGISI PENUH SCREEN VERTIKAL ELASTIS */
     .tv-table-body {
       flex: 1 1 0%;
       min-height: 0;
       display: flex;
       flex-direction: column;
       overflow-y: hidden;
-      gap: 2mm;
-      padding: 2mm;
+      gap: 0px;
+      padding: 0px;
     }
 
-    /* BARIS JADWAL PER JAM (SUDUT 90 DERAJAT UNSHARP 3PX) */
     .tv-schedule-row {
       display: grid;
-      grid-template-columns: 140px 1fr 1fr;
+      grid-template-columns: 125px 1fr 1fr;
       align-items: stretch;
-      gap: 2mm;
+      gap: 10px;
       flex: 1 1 0%;
       min-height: 0;
-      padding: 1mm 2mm;
-      border-radius: 3px;
-      transition: background-color 0.25s ease;
-      border: 1px solid transparent;
-      border-bottom: 1px solid #f1f5f9;
+      padding: 6px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      transition: background-color 0.2s ease;
     }
 
-    /* HIGHLIGHT BARIS WAKTU SEKARANG (CURRENT TIME ROW) */
+    /* SHADING BARIS BELANG-BELANG PERSIS FOTO */
+    .tv-schedule-row:nth-child(odd) {
+      background-color: #ffffff;
+    }
+
+    .tv-schedule-row:nth-child(even) {
+      background-color: #f1f7fd;
+    }
+
     .tv-schedule-row.is-current-time {
-      background: rgba(254, 242, 242, 0.85) !important;
-      border: 1.5px solid #ef4444 !important;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.15) inset;
+      background-color: #e0f2fe !important;
+      border-left: 4px solid #0284c7 !important;
     }
 
-    /* KOLOM WAKTU DI SEBELAH KIRI */
     .tv-col-time {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding-left: 2mm;
-      line-height: 1.1;
-      gap: 2px;
+      padding-left: 4px;
+      line-height: 1.15;
+      gap: 1px;
       user-select: none;
     }
 
     .tv-time-main {
-      font-size: 1.55rem;
+      font-size: 1.65rem;
       font-weight: 900;
-      color: #0f172a;
+      color: #0c2e60;
       letter-spacing: -0.01em;
+      line-height: 1;
     }
 
     .tv-time-sub {
       font-size: 0.82rem;
-      font-weight: 700;
+      font-weight: 600;
       color: #64748b;
+      margin-top: 2px;
     }
 
-    /* BADGE KUNING "SEKARANG" DI BAWAH JAM (SUDUT 90 DERAJAT UNSHARP 2PX) */
     .tv-now-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background-color: #f59e0b;
-      color: #020617;
+      background-color: #0284c7;
+      color: #ffffff;
       font-size: 0.68rem;
       font-weight: 900;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       padding: 1px 6px;
-      border-radius: 2px;
+      border-radius: 3px;
       width: fit-content;
       margin-top: 3px;
-      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35);
+      box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
       animation: pulseNow 2s infinite ease-in-out;
     }
 
@@ -409,7 +411,6 @@
       50% { opacity: 0.85; transform: scale(1.02); }
     }
 
-    /* KARTU KONSUMEN / MOTOR DALAM SLOT (PADDING 2MM ELASTIS) */
     .tv-stall-cell {
       display: flex;
       flex-direction: column;
@@ -419,26 +420,25 @@
       overflow: hidden;
     }
 
-    /* KARTU BOOKING: PUTIH BERSIH · TEKS WRAP RAPI */
     .tv-booking-card {
       background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 3px; /* 90 derajat tidak lancip */
+      border: 1.5px solid #0284c7;
+      border-radius: 6px;
       height: 100%;
       min-height: 0;
-      padding: 2mm 3.5mm;
+      padding: 6px 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 1.5mm;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      gap: 3px;
+      box-shadow: 0 2px 8px rgba(15, 35, 65, 0.08);
       transition: all 0.2s ease;
       overflow: hidden;
     }
 
     .tv-booking-card:hover {
-      border-color: #94a3b8;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-color: #0369a1;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
     }
 
     .tv-card-top {
@@ -449,11 +449,10 @@
       line-height: 1.2;
     }
 
-    /* TEKS WRAP: NAMA KONSUMEN TIDAK TERPOTONG */
     .tv-card-name {
       font-size: 1.05rem;
       font-weight: 800;
-      color: #0f172a;
+      color: #0c2340;
       white-space: normal;
       word-break: break-word;
       overflow-wrap: break-word;
@@ -461,53 +460,51 @@
       flex: 1 1 auto;
     }
 
-    /* BADGE STATUS PIL */
     .tv-status-badge {
       font-size: 0.68rem;
       font-weight: 900;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       padding: 2.5px 8px;
-      border-radius: 2px;
+      border-radius: 3px;
       white-space: nowrap;
       flex-shrink: 0;
     }
 
     .badge-selesai {
-      background: #dcfce7;
-      color: #15803d;
-      border: 1px solid #86efac;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #10b981;
     }
 
     .badge-dikerjakan {
-      background: #e0f2fe;
+      background: #f0f9ff;
       color: #0369a1;
-      border: 1px solid #7dd3fc;
+      border: 1px solid #0284c7;
     }
 
     .badge-menunggu {
-      background: #fef3c7;
-      color: #b45309;
-      border: 1px solid #fde68a;
+      background: #fefce8;
+      color: #a16207;
+      border: 1px solid #eab308;
     }
 
     .badge-qc {
-      background: #f3e8ff;
-      color: #7e22ce;
-      border: 1px solid #d8b4fe;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #94a3b8;
     }
 
     .badge-terjadwal {
-      background: #f1f5f9;
-      color: #475569;
+      background: #f8fafc;
+      color: #334155;
       border: 1px solid #cbd5e1;
     }
 
-    /* TEKS WRAP: KELUHAN / NAMA SERVIS BISA MULTI-BARIS RAPI */
     .tv-card-mid {
-      font-size: 0.86rem;
+      font-size: 0.85rem;
       font-weight: 600;
-      color: #334155;
+      color: #475569;
       white-space: normal;
       word-break: break-word;
       overflow-wrap: break-word;
@@ -516,7 +513,6 @@
       flex: 1 1 auto;
     }
 
-    /* TEKS WRAP: BARIS BAWAH PLAT & MODEL */
     .tv-card-bot {
       display: flex;
       align-items: center;
@@ -531,45 +527,47 @@
     .tv-card-plate {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-weight: 800;
-      color: #0f172a;
+      color: #0284c7;
     }
 
     .tv-card-model {
       font-weight: 600;
-      color: #64748b;
+      color: #334155;
     }
 
     .tv-express-slot-badge {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.72rem;
-      font-weight: 800;
-      color: #0369a1;
+      font-weight: 900;
+      color: #0284c7;
       background: #e0f2fe;
+      border: 1px solid #bfdbfe;
       padding: 1px 5px;
-      border-radius: 2px;
-      border: 1px solid #7dd3fc;
+      border-radius: 3px;
+      margin-right: 5px;
       display: inline-block;
-      margin-right: 4px;
-      white-space: nowrap;
     }
 
-    /* ============================================================== */
-    /* KOTAK KOSONG CERAH & RAPI (SUDUT 90 DERAJAT UNSHARP 3PX)       */
-    /* Padding 2mm Sesuai Permintaan User                             */
-    /* ============================================================== */
+    /* KOTAK KOSONG SERAGAM (STALL 1 & STALL 2 SAMA PERSIS, ABU-ABU PUDAR) */
     .tv-empty-box {
       height: 100%;
       min-height: 0;
-      border-radius: 3px;
-      background: #f8fafc;
-      border: 1.5px dashed #94a3b8;
+      border-radius: 6px;
+      background-color: #eaeff5;
+      border: 1px solid #cbd5e1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2mm;
+      padding: 6px;
       transition: all 0.2s ease;
       user-select: none;
       overflow: hidden;
+    }
+
+    .tv-empty-box .tv-express-slot-badge {
+      color: #475569;
+      background: #e2e8f0;
+      border-color: #cbd5e1;
     }
 
     .tv-empty-inner {
@@ -577,95 +575,93 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 2px;
+      gap: 3px;
       text-align: center;
       line-height: 1.2;
     }
 
     .tv-empty-title {
-      font-size: 0.92rem;
+      font-size: 0.98rem;
       font-weight: 900;
-      color: #475569;
-      letter-spacing: 0.08em;
+      color: #64748b;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       white-space: normal;
       word-break: break-word;
     }
 
     .tv-empty-sub {
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      color: #64748b;
+      color: #94a3b8;
       white-space: normal;
     }
 
-    /* KOTAK KOSONG YANG JAMNYA SUDAH TERLEWAT: GARIS & TULISAN DIBUAT TIPIS/PUDAR */
     .tv-empty-box.is-past {
-      opacity: 0.35;
-      border: 1px dashed #cbd5e1;
-      background: #f8fafc;
-    }
-
-    .tv-empty-box.is-past .tv-empty-title {
-      font-weight: 500;
-      color: #94a3b8;
-    }
-
-    .tv-empty-box.is-past .tv-empty-sub {
-      font-weight: 400;
-      color: #cbd5e1;
-    }
-
-    .tv-empty-box.is-past .tv-express-slot-badge {
       opacity: 0.5;
-      border: 1px solid #cbd5e1;
-      color: #94a3b8;
-      background: rgba(0,0,0,0.03);
     }
 
-    /* SLOT ISTIRAHAT / BREAK: JELAS & RAPI */
+    /* SLOT ISTIRAHAT / BREAK: KOTAK CARD SERAGAM DENGAN SLOT LAINNYA */
     .tv-break-slot {
       height: 100%;
       min-height: 0;
-      border-radius: 3px;
-      background: #fff7ed;
-      border: 1.5px solid #fed7aa;
+      border-radius: 6px;
+      background-color: #fef3c7;
+      border: 1px solid #fcd34d;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      color: #c2410c;
-      font-size: 0.88rem;
-      font-weight: 900;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      padding: 6px;
       user-select: none;
-      padding: 2mm;
-      text-align: center;
-      white-space: normal;
-      word-break: break-word;
-      line-height: 1.25;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(180, 83, 9, 0.08);
+      transition: all 0.2s ease;
     }
 
-    /* ============================================================== */
-    /* FOOTER STATUS                                                  */
-    /* ============================================================== */
+    .tv-break-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .tv-break-title {
+      font-size: 0.98rem;
+      font-weight: 900;
+      color: #b45309;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .tv-break-sub {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #d97706;
+      white-space: normal;
+    }
+
+    /* FOOTER STATUS */
     .tv-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #fee2e2;
-      padding: 0 1mm;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #0c2340;
+      padding: 0 4px;
       flex-shrink: 0;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
     }
 
     .tv-footer-left {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 14px;
     }
 
     .tv-footer-right {
@@ -736,6 +732,8 @@
     body:fullscreen {
       height: 100vh !important;
       overflow: hidden !important;
+      background-color: #ffffff !important;
+      background: #ffffff !important;
     }
 
     .tv-mode-fullscreen .tv-title,
@@ -797,19 +795,18 @@
     <!-- 1. TOP HEADER -->
     <header class="tv-header">
       <div class="tv-brand-block">
-        <div class="tv-logo-polytron">
-          <span class="dot"></span>
-          <span>POLYTRON</span>
-        </div>
-        <h1 class="tv-title">Status Service Motor Listrik</h1>
+        <h1 class="tv-title">
+          <span>STATUS SERVICE</span>
+          <span class="tv-title-sub">MOTOR LISTRIK</span>
+        </h1>
         
         <!-- PILIHAN KATEGORI: REGULER ATAU EXPRESS -->
         <div class="tv-category-switcher">
           <button onclick="setViewCategory('reguler', true)" id="btnCatReguler" class="tv-cat-btn active">
-            <span>🏍️ Reguler (Stall 1 & 2)</span>
+            <span>Reguler</span>
           </button>
           <button onclick="setViewCategory('express', true)" id="btnCatExpress" class="tv-cat-btn">
-            <span>⚡ Express Bay</span>
+            <span>Express Bay</span>
           </button>
         </div>
 
@@ -828,33 +825,35 @@
             <span>Dikerjakan</span>
           </div>
           <div class="tv-legend-item">
-            <span class="tv-legend-dot dot-qc"></span>
-            <span>QC</span>
-          </div>
-          <div class="tv-legend-item">
             <span class="tv-legend-dot dot-selesai"></span>
             <span>Selesai</span>
           </div>
         </div>
       </div>
 
-      <!-- KANAN ATAS: TANGGAL, JAM & CONTROLS (HANYA FULLSCREEN & APP) -->
+      <!-- KANAN ATAS: TANGGAL, JAM & CONTROLS -->
       <div class="tv-time-block">
-        <div id="tvDateDisplay" class="tv-date-text">Sabtu, 17 Okt 2026</div>
-        <div id="tvClockDisplay" class="tv-clock-text">16:19:34</div>
+        <div id="tvDateDisplay" class="tv-date-text">Senin, 19 Okt 2026</div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 1.5px; height: 32px; background-color: #94a3b8; opacity: 0.6;"></span>
+          <div id="tvClockDisplay" class="tv-clock-text">23:40:20</div>
+        </div>
         <div class="tv-controls-row">
           <!-- Pilihan Site / Cabang (Sinkron dengan SA & Teknisi) -->
-          <select id="tvSiteSelector" onchange="handleTvSiteChange(this.value)" class="tv-btn" title="Pilih Cabang / Site" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.35); color: #ffffff; font-weight: 800; cursor: pointer; padding: 4px 8px; border-radius: 3px; outline: none;">
-            <option value="">Memuat cabang...</option>
-          </select>
-          <!-- Tombol Fullscreen -->
+          <div style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.85); border: 1px solid #bfdbfe; border-radius: 6px; padding: 2px 8px; gap: 4px; box-shadow: 0 1px 3px rgba(15, 35, 65, 0.05);">
+            <span style="color: #c026d3; font-size: 13px;">📍</span>
+            <select id="tvSiteSelector" onchange="handleTvSiteChange(this.value)" style="background: transparent; border: none; color: #0c2340; font-weight: 800; cursor: pointer; outline: none; font-size: 0.8rem;">
+              <option value="">Memuat cabang...</option>
+            </select>
+          </div>
+          <!-- Tombol Fullscreen / Exit -->
           <button onclick="toggleFullScreen()" id="btnFullscreenToggle" class="tv-btn" title="Mode Layar Penuh">
-            <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-            <span id="btnFsLabel">Full</span>
+            <svg style="width: 13px; height: 13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            <span id="btnFsLabel">Exit</span>
           </button>
           <!-- Tombol Menu Utama Aplikasi Operasional -->
           <a href="index_app.html" class="tv-btn" title="Buka Aplikasi Operasional (Portal, Booking, SA, Teknisi)">
-            <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <svg style="width: 13px; height: 13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             <span>App</span>
           </a>
         </div>
@@ -882,23 +881,27 @@
         <!-- Generated via Javascript -->
       </div>
 
+      <!-- STRIP INFO BATAS BOOKING DALAM KARTU TABEL (SATU-SATUNYA BATAS BOOKING DI MONITOR) -->
+      <div id="tvFooterHoursText" style="background: #0d284f; border-top: none; padding: 7px 14px; font-size: 0.85rem; font-weight: 800; color: #ffffff; text-align: left; flex-shrink: 0; letter-spacing: 0.02em;">
+        Batas booking servis 08.30 - 14.30 (Senin - Jumat)
+      </div>
+
     </main>
 
     <!-- 3. FOOTER STATUS BAR -->
     <footer class="tv-footer">
       <div class="tv-footer-left">
-        <span id="tvFooterHoursText">Batas booking servis 08.30 – 14.30 (Sabtu & Minggu s.d. 11.30) · Memuat cabang service...</span>
+        <span id="tvSlotSummaryText">Reguler: 0 / 14 Slot Terisi</span>
       </div>
       <div class="tv-footer-right">
-        <span id="tvSlotSummaryText">Terisi: 0 Slot</span>
         <!-- Status Koneksi Realtime -->
-        <span id="tvSheetStatus" style="display: inline-flex; align-items: center; gap: 5px; color: #86efac;">
-          <span id="tvSheetDot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #86efac; box-shadow: 0 0 6px #86efac;"></span>
+        <span id="tvSheetStatus" style="display: inline-flex; align-items: center; gap: 5px; color: #16a34a; font-weight: 800;">
+          <span id="tvSheetDot" style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 6px rgba(22, 163, 74, 0.4);"></span>
           <span id="tvSheetStatusText">Terhubung</span>
         </span>
         <!-- Status MQTT Realtime -->
-        <span style="display: inline-flex; align-items: center; gap: 5px; color: #38bdf8;">
-          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 6px #38bdf8;"></span>
+        <span style="display: inline-flex; align-items: center; gap: 5px; color: #0284c7; font-weight: 800;">
+          <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #0284c7; box-shadow: 0 0 6px rgba(2, 132, 199, 0.4);"></span>
           <span>MQTT Live</span>
         </span>
       </div>
@@ -919,7 +922,7 @@
     // ==============================================================
     // KONFIGURASI UTAMA & MASTER SITES DENGAN KODE
     // ==============================================================
-    const CURRENT_APP_VERSION = '20261019_v53';
+    const CURRENT_APP_VERSION = '20261020_v84';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
@@ -946,14 +949,56 @@
       }
     } catch(e) {}
 
-    let currentSiteId = localStorage.getItem(SITE_KEY) || (SITES[0] ? SITES[0].id : 'tasik');
+    let currentSiteId = localStorage.getItem(SITE_KEY) || localStorage.getItem('POLYTRON_ACTIVE_SITE_ID') || (SITES.find(s => s.id.includes('tasik')) ? SITES.find(s => s.id.includes('tasik')).id : (SITES[0] ? SITES[0].id : 'tasik'));
     let isSoundEnabled = true;
     let globalMqttClient = null;
 
+    function findSite(idOrCodeOrName) {
+      if (!idOrCodeOrName) return null;
+      const raw = String(idOrCodeOrName).toLowerCase().trim();
+      const clean = raw.replace(/polytron/g, '').replace(/service\s*center/g, '').replace(/sc/g, '').replace(/[^a-z0-9]/g, '');
+
+      // 1. Direct match by id or code
+      let found = SITES.find(s => s && (
+        (s.id && String(s.id).toLowerCase().trim() === raw) ||
+        (s.code && String(s.code).toLowerCase().trim() === raw)
+      ));
+      if (found) return found;
+
+      // 2. Direct match by name
+      found = SITES.find(s => s && s.name && String(s.name).toLowerCase().trim() === raw);
+      if (found) return found;
+
+      // 3. Match by clean keyword
+      found = SITES.find(s => {
+        if (!s) return false;
+        const sIdClean = String(s.id || '').toLowerCase().replace(/polytron/g, '').replace(/sc/g, '').replace(/[^a-z0-9]/g, '');
+        const sCodeClean = String(s.code || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const sNameClean = String(s.name || '').toLowerCase().replace(/polytron/g, '').replace(/service\s*center/g, '').replace(/sc/g, '').replace(/[^a-z0-9]/g, '');
+        return (clean && (clean === sIdClean || clean === sCodeClean || clean === sNameClean));
+      });
+      if (found) return found;
+
+      // 4. Special alias for tasik / tasikmalaya
+      if (clean === 'tasik' || clean === 'tasikmalaya') {
+        found = SITES.find(s => {
+          const sId = String(s.id || '').toLowerCase();
+          const sName = String(s.name || '').toLowerCase();
+          return sId.includes('tasik') || sName.includes('tasik');
+        });
+        if (found) return found;
+      }
+
+      return null;
+    }
+
     function getSiteCode(siteId) {
       if (!siteId) return '';
-      const s = SITES.find(item => item.id === siteId || (item.code && item.code.toUpperCase() === String(siteId).toUpperCase()));
-      return s ? (s.code || s.id.substring(0, 3).toUpperCase()) : String(siteId).substring(0, 3).toUpperCase();
+      const s = findSite(siteId);
+      if (s && s.code && /^[A-Z0-9]{2,4}$/i.test(s.code)) {
+        return s.code.toUpperCase();
+      }
+      return '';
     }
 
     function initTvSiteDropdown() {
@@ -976,6 +1021,13 @@
       if (!newSiteId) return;
       currentSiteId = newSiteId;
       localStorage.setItem(SITE_KEY, newSiteId);
+      localStorage.setItem('POLYTRON_ACTIVE_SITE_ID', newSiteId);
+
+      // Batalkan panggilan suara aktif dan sembunyikan toast jika berganti area
+      if ('speechSynthesis' in window) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+      }
+      hideActiveCallToast();
 
       const sel = document.getElementById('tvSiteSelector');
       if (sel && sel.value !== newSiteId) sel.value = newSiteId;
@@ -985,12 +1037,37 @@
       if (hoursText) {
         const isTvDateSat = isSaturday(getLocalDateIso());
         hoursText.innerText = isTvDateSat 
-          ? `Batas booking servis 08.30 – 11.30 (Sabtu & Minggu) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}` 
-          : `Batas booking servis 08.30 – 14.30 (Senin - Jumat) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}`;
+          ? 'Batas booking servis 08.30 – 11.30 (Sabtu & Minggu)' 
+          : 'Batas booking servis 08.30 – 14.30 (Senin - Jumat)';
       }
 
-      // Pemilihan cabang Monitor TV bersifat lokal dan mandiri (tidak saling overwrite)
       renderScheduleTable();
+
+      // Sinkronisasi otomatis ke aplikasi operasional (SA & Teknisi)
+      if (!isRemote) {
+        const siteCode = getSiteCode(newSiteId);
+        const siteObj = findSite(newSiteId);
+        const payload = {
+          type: 'SITE_CHANGED',
+          siteId: newSiteId,
+          siteCode: siteCode,
+          siteName: siteObj ? siteObj.name : newSiteId,
+          timestamp: Date.now()
+        };
+
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const bc = new BroadcastChannel('polytron_ev_sync_channel');
+            bc.postMessage(payload);
+          } catch (e) {}
+        }
+
+        if (globalMqttClient && globalMqttClient.connected) {
+          try {
+            globalMqttClient.publish('polytron/ev/global/site_sync', JSON.stringify(payload));
+          } catch (e) {}
+        }
+      }
     }
 
     // KATEGORI AKTIF: 'reguler' (Stall 1 & 2) ATAU 'express' (Express Bay: 2 slot per baris)
@@ -1017,8 +1094,8 @@
       const thCol2 = document.getElementById('tvThCol2');
       if (thCol1 && thCol2) {
         if (cat === 'reguler') {
-          thCol1.innerHTML = '<span class="tv-th-main">STALL 1</span><span class="tv-th-sub">· Teknisi A</span>';
-          thCol2.innerHTML = '<span class="tv-th-main">STALL 2</span><span class="tv-th-sub">· Teknisi B</span>';
+          thCol1.innerHTML = '<span class="tv-th-main">STALL 1</span><span class="tv-th-sub"> - Teknisi A</span>';
+          thCol2.innerHTML = '<span class="tv-th-main">STALL 2</span><span class="tv-th-sub"> - Teknisi B</span>';
         } else {
           thCol1.innerHTML = '<span class="tv-th-main">EXPRESS BAY</span><span class="tv-th-sub">· 30 Mnt Pertama</span>';
           thCol2.innerHTML = '<span class="tv-th-main">EXPRESS BAY</span><span class="tv-th-sub">· 30 Mnt Kedua</span>';
@@ -1046,7 +1123,10 @@
 
     // AUTO-UPDATE DARI GITHUB PAGES (ANTI-STALE CACHE) - TANPA AUTO-RESTART
     function checkHostingVersionUpdate() {
-      // Dinonaktifkan auto-reload paksa agar layar TV Monitor tidak berkedip atau restart sendiri
+      // Jika dibuka langsung via double-click file:// di Windows, lewati agar tidak memicu error CORS browser
+      if (window.location.protocol === 'file:' || !window.location.protocol.startsWith('http')) {
+        return;
+      }
       fetch('./version.json?_t=' + Date.now(), { cache: 'no-store' })
         .then(function(res) {
           if (!res.ok) return null;
@@ -1086,8 +1166,8 @@
     // ==============================================================
     let audioCtx = null;
 
-    function getAudioContext() {
-      if (!audioCtx) {
+    function getAudioContext(createIfMissing = false) {
+      if (!audioCtx && createIfMissing) {
         const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
         if (AudioCtxClass) {
           audioCtx = new AudioCtxClass();
@@ -1099,12 +1179,12 @@
       return audioCtx;
     }
 
-    function autoUnlockAudioEngine() {
+    function autoUnlockAudioEngine(fromUserGesture = false) {
       isSoundEnabled = true;
       try { localStorage.setItem(SOUND_KEY, 'true'); } catch (e) {}
 
       try {
-        const ctx = getAudioContext();
+        const ctx = getAudioContext(fromUserGesture);
         if (ctx) {
           if (ctx.state === 'suspended') {
             ctx.resume().then(function() {
@@ -1128,8 +1208,7 @@
 
     function checkAudioState() {
       try {
-        const ctx = getAudioContext();
-        if (ctx && ctx.state === 'suspended') {
+        if (!audioCtx || audioCtx.state === 'suspended') {
           showAudioUnlockToast();
         } else {
           hideAudioUnlockToast();
@@ -1148,19 +1227,18 @@
     }
 
     function forceUnlockAudioFromToast() {
-      autoUnlockAudioEngine();
+      autoUnlockAudioEngine(true);
       playChime();
     }
 
+    // Aktifkan audio begitu ada interaksi pengguna (klik/sentuh) pada layar
     ['click', 'touchstart', 'pointerdown', 'keydown'].forEach(function(evt) {
       window.addEventListener(evt, function() {
-        autoUnlockAudioEngine();
+        autoUnlockAudioEngine(true);
       }, { passive: true });
     });
 
-    autoUnlockAudioEngine();
     window.addEventListener('load', function() {
-      autoUnlockAudioEngine();
       setTimeout(checkAudioState, 1500);
     });
 
@@ -1205,6 +1283,15 @@
 
     // Suara Panggilan Text-to-Speech
     function announceVoice(text, booking) {
+      // STRICT FILTER AREA: Jika panggilan berasal dari area/cabang lain, abaikan total (tanpa suara & tanpa toast)
+      if (booking) {
+        const bSite = booking.siteId || booking.siteCode;
+        if (bSite && !isSameSite(bSite, currentSiteId)) {
+          console.log(`[TV VOICE IGNORED] Panggilan area "${bSite}" diabaikan karena monitor TV berada di area "${currentSiteId}"`);
+          return;
+        }
+      }
+
       autoUnlockAudioEngine();
 
       text = text.replace(/^(panggilan\s+(selesai|kedatangan|datang)|perhatian|pendaftaran\s+walk\s*in\s*berhasil)[\.\:\,\-]?\s*/gi, '').trim();
@@ -1264,6 +1351,17 @@
         toastTimer = setTimeout(function() {
           toast.classList.add('hidden');
         }, 8500);
+      }
+    }
+
+    function hideActiveCallToast() {
+      const toast = document.getElementById('activeCallToast');
+      if (toast) {
+        toast.classList.add('hidden');
+      }
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
       }
     }
 
@@ -1336,7 +1434,7 @@
         // BOOKING REGULER (FORMAT 3 KODE SITE: REGTSM001, REGTSM002, DST.)
         { id: 'PLY-TSM-20261017-001', queueNumber: 'REGTSM001', name: 'Bpk. Hendra Gunawan', phone: '081234567890', plate: 'Z 1234 AB', model: 'Polytron Fox-R', serviceType: 'reguler', complaint: 'Cek Baterai Drop', stall: 'stall1', slot: '08.30', status: 'Selesai', date: today, siteId: 'tasikmalaya', siteCode: 'TSM' },
         { id: 'PLY-TSM-20261017-002', queueNumber: 'REGTSM002', name: 'Ibu Rina Suminar', phone: '081234567891', plate: 'Z 5678 CD', model: 'Polytron Fox-S', serviceType: 'reguler', complaint: 'Update Software Controller', stall: 'stall2', slot: '08.30', status: 'Selesai', date: today, siteId: 'tasikmalaya', siteCode: 'TSM' },
-        { id: 'PLY-TSM-20261017-003', queueNumber: 'REGTSM003', name: 'Bpk. Ahmad Fauzi', phone: '081234567892', plate: 'Z 9012 EF', model: 'Polytron Fox-500', serviceType: 'reguler', complaint: 'Ganti Dinamo Motor (Level 2)', stall: 'stall1', slot: '09.30', secondarySlot: '10.30', level: 'Level 2', estimatedHours: 2, status: 'Dikerjakan', date: today, siteId: 'tasikmalaya', siteCode: 'TSM' },
+        { id: 'PLY-TSM-20261017-003', queueNumber: 'REGTSM003', name: 'Bpk. Ahmad Fauzi', phone: '081234567892', plate: 'Z 9012 EF', model: 'Polytron Fox-500', serviceType: 'reguler', complaint: 'Ganti Dinamo Motor', stall: 'stall1', slot: '09.30', secondarySlot: '10.30', level: 'Level 2', estimatedHours: 2, status: 'Dikerjakan', date: today, siteId: 'tasikmalaya', siteCode: 'TSM' },
         { id: 'PLY-TSM-20261017-004', queueNumber: 'REGTSM004', name: 'Sdr. Kevin Sanjaya', phone: '081234567893', plate: 'D 3456 GH', model: 'Polytron Fox-R', serviceType: 'reguler', complaint: 'Klaim Garansi Charger', stall: 'stall2', slot: '09.30', status: 'Dikerjakan', date: today, siteId: 'tasikmalaya', siteCode: 'TSM' },
         { id: 'PLY-TSM-20261017-005', queueNumber: 'REGTSM005', name: 'Bpk. Dedi Suryadi', phone: '081234567894', plate: 'Z 7890 IJ', model: 'Polytron Fox-R', serviceType: 'reguler', complaint: 'Servis Kelistrikan', stall: 'stall2', slot: '10.30', status: 'Menunggu', date: today, siteId: 'tasikmalaya', siteCode: 'TSM' },
         { id: 'PLY-TSM-20261017-006', queueNumber: 'REGTSM006', name: 'Ibu Dewi Sartika', phone: '081234567895', plate: 'Z 2345 KL', model: 'Polytron Fox-S', serviceType: 'reguler', complaint: 'Ganti Kampas Rem', stall: 'stall1', slot: '11.30', status: 'Terjadwal', date: today, siteId: 'tasikmalaya', siteCode: 'TSM' },
@@ -1385,13 +1483,24 @@
     }
 
     function isSameSite(id1, id2) {
-      if (!id1 || !id2) return true;
+      if (!id1 || !id2) return false;
       const s1 = String(id1).toLowerCase().trim();
       const s2 = String(id2).toLowerCase().trim();
       if (s1 === s2) return true;
-      const c1 = getSiteCode(s1);
-      const c2 = getSiteCode(s2);
-      return c1 === c2;
+
+      const site1 = findSite(s1);
+      const site2 = findSite(s2);
+      if (site1 && site2) {
+        return site1.id === site2.id || (site1.code && site2.code && site1.code === site2.code);
+      }
+
+      const clean1 = s1.replace(/polytron/g, '').replace(/service\s*center/g, '').replace(/sc/g, '').replace(/[^a-z0-9]/g, '');
+      const clean2 = s2.replace(/polytron/g, '').replace(/service\s*center/g, '').replace(/sc/g, '').replace(/[^a-z0-9]/g, '');
+      if (!clean1 || !clean2) return false;
+      if (clean1 === clean2) return true;
+      if ((clean1 === 'tasik' || clean1 === 'tasikmalaya') && (clean2 === 'tasik' || clean2 === 'tasikmalaya')) return true;
+
+      return false;
     }
 
     // Helper Express Bay matching (30 menit interval)
@@ -1533,7 +1642,16 @@
 
           // Kotak 1: Stall 1
           if (slot.start === '12.30' && !isTvDateSat) {
-            col1Html = `<div class="tv-stall-cell"><div class="tv-break-slot">☕ ISTIRAHAT (12.30 - 13.30)</div></div>`;
+            col1Html = `
+              <div class="tv-stall-cell">
+                <div class="tv-break-slot">
+                  <div class="tv-break-inner">
+                    <span class="tv-break-title">ISTIRAHAT</span>
+                    <span class="tv-break-sub">12.30 - 13.30</span>
+                  </div>
+                </div>
+              </div>
+            `;
           } else {
             const b1 = bookings.find(function(b) {
               return isSameStall(b.stall, 'stall1') && isBookingInSlot(b, slot.start) && b.status !== 'Batal';
@@ -1547,7 +1665,7 @@
                   <div class="tv-empty-box ${isSlotPast ? 'is-past' : ''}">
                     <div class="tv-empty-inner">
                       <span class="tv-empty-title">KOSONG</span>
-                      <span class="tv-empty-sub">Stall 1 Tersedia</span>
+                      <span class="tv-empty-sub">Stall Tersedia</span>
                     </div>
                   </div>
                 </div>
@@ -1557,7 +1675,16 @@
 
           // Kotak 2: Stall 2
           if (slot.start === '13.30' && !isTvDateSat) {
-            col2Html = `<div class="tv-stall-cell"><div class="tv-break-slot">☕ ISTIRAHAT (13.30 - 14.30)</div></div>`;
+            col2Html = `
+              <div class="tv-stall-cell">
+                <div class="tv-break-slot">
+                  <div class="tv-break-inner">
+                    <span class="tv-break-title">ISTIRAHAT</span>
+                    <span class="tv-break-sub">13.30 - 14.30</span>
+                  </div>
+                </div>
+              </div>
+            `;
           } else {
             const b2 = bookings.find(function(b) {
               return isSameStall(b.stall, 'stall2') && isBookingInSlot(b, slot.start) && b.status !== 'Batal';
@@ -1571,7 +1698,7 @@
                   <div class="tv-empty-box ${isSlotPast ? 'is-past' : ''}">
                     <div class="tv-empty-inner">
                       <span class="tv-empty-title">KOSONG</span>
-                      <span class="tv-empty-sub">Stall 2 Tersedia</span>
+                      <span class="tv-empty-sub">Stall Tersedia</span>
                     </div>
                   </div>
                 </div>
@@ -1653,8 +1780,8 @@
       const hoursText = document.getElementById('tvFooterHoursText');
       if (hoursText) {
         hoursText.innerText = isTvDateSat 
-          ? `Batas booking servis 08.30 – 11.30 (Sabtu & Minggu) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}` 
-          : `Batas booking servis 08.30 – 14.30 (Senin - Jumat) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}`;
+          ? 'Batas booking servis 08.30 – 11.30 (Sabtu & Minggu)' 
+          : 'Batas booking servis 08.30 – 14.30 (Senin - Jumat)';
       }
 
       const summaryText = document.getElementById('tvSlotSummaryText');
@@ -1673,15 +1800,12 @@
       if (rawStatus.includes('selesai') || rawStatus === 'done' || rawStatus === 'completed') {
         badgeClass = 'badge-selesai';
         badgeText = 'SELESAI';
-      } else if (rawStatus.includes('progres') || rawStatus.includes('progress') || rawStatus.includes('kerja')) {
+      } else if (rawStatus.includes('progres') || rawStatus.includes('progress') || rawStatus.includes('kerja') || rawStatus.includes('qc') || rawStatus.includes('quality')) {
         badgeClass = 'badge-dikerjakan';
         badgeText = 'DIKERJAKAN';
       } else if (rawStatus.includes('tunggu') || rawStatus.includes('checked') || rawStatus.includes('tiba')) {
         badgeClass = 'badge-menunggu';
         badgeText = 'MENUNGGU';
-      } else if (rawStatus.includes('qc') || rawStatus.includes('quality')) {
-        badgeClass = 'badge-qc';
-        badgeText = 'QC';
       }
 
       const name = b.name || b.queueNumber || 'Konsumen';
@@ -1692,8 +1816,6 @@
       let extraBadge = '';
       if (currentCategory === 'express' && slotBadgeText) {
         extraBadge = `<span class="tv-express-slot-badge">${slotBadgeText.replace('SLOT ', '')}</span>`;
-      } else if (b.estimatedHours >= 2 || b.secondarySlot) {
-        extraBadge = `<span style="background:#fee2e2; color:#b91c1c; font-size:0.62rem; font-weight:800; padding:1px 4px; border-radius:2px; margin-right:4px;">⏱️ LEVEL 2 (2 JAM)</span>`;
       }
 
       return `
@@ -1797,9 +1919,8 @@
       let s = String(item.status || 'Terjadwal').trim();
       const sLower = s.toLowerCase();
       if (sLower === 'selesai' || sLower === 'completed' || sLower === 'done') s = 'Selesai';
-      else if (sLower === 'dikerjakan' || sLower === 'in_progress' || sLower === 'progress' || sLower === 'in progress' || sLower === 'sedang dikerjakan') s = 'Dikerjakan';
+      else if (sLower === 'dikerjakan' || sLower === 'in_progress' || sLower === 'progress' || sLower === 'in progress' || sLower === 'sedang dikerjakan' || sLower === 'qc' || sLower === 'quality control') s = 'Dikerjakan';
       else if (sLower === 'menunggu' || sLower === 'waiting' || sLower === 'antri' || sLower === 'checked in') s = 'Menunggu';
-      else if (sLower === 'qc' || sLower === 'quality control') s = 'QC';
       else if (sLower === 'batal' || sLower === 'cancelled') s = 'Batal';
       else s = 'Terjadwal';
 
@@ -1891,7 +2012,11 @@
                 try {
                   localStorage.setItem('POLYTRON_MASTER_SITES_CACHE_V2', JSON.stringify(SITES));
                 } catch(e) {}
-                if (!currentSiteId || !SITES.find(s => s.id === currentSiteId)) {
+                const savedSite = localStorage.getItem(SITE_KEY) || localStorage.getItem('POLYTRON_ACTIVE_SITE_ID');
+                if (savedSite && SITES.find(s => s.id === savedSite || isSameSite(s.id, savedSite))) {
+                  const match = SITES.find(s => s.id === savedSite || isSameSite(s.id, savedSite));
+                  currentSiteId = match.id;
+                } else if (!currentSiteId || !SITES.find(s => s.id === currentSiteId || isSameSite(s.id, currentSiteId))) {
                   const def = SITES.find(s => s.id.includes('tasik')) || SITES[0];
                   currentSiteId = def ? def.id : '';
                 }
@@ -1908,8 +2033,14 @@
       } catch(e) {}
     }
 
+    let lastTvSheetFetchTime = 0;
     async function fetchDataFromGoogleSheet(isManual = false) {
       if (isTvSyncingSheet) return;
+      const now = Date.now();
+      if (!isManual && (now - lastTvSheetFetchTime < 55000)) {
+        return;
+      }
+      lastTvSheetFetchTime = now;
       isTvSyncingSheet = true;
 
       const syncIcon = document.getElementById('tvSyncIcon');
@@ -2124,14 +2255,18 @@
     // REALTIME MQTT LISTENER (KONEKSI DENGAN HP ADMIN / SA)
     // ==============================================================
     function initRealtimeSync() {
+      // 1. BroadcastChannel untuk sinkronisasi instan antar-tab pada browser yang sama
       try {
         if ('BroadcastChannel' in window) {
           const bc = new BroadcastChannel('polytron_ev_sync_channel');
           bc.onmessage = function(event) {
             if (!event.data) return;
 
-            // Abaikan SITE_CHANGED agar pemilihan cabang monitor tetap independen
-            if (event.data.type === 'SITE_CHANGED') {
+            // Sinkronkan cabang jika tab operasional mengubah area aktif
+            if (event.data.type === 'SITE_CHANGED' && event.data.siteId) {
+              if (event.data.siteId !== currentSiteId) {
+                handleTvSiteChange(event.data.siteId, true);
+              }
               return;
             }
 
@@ -2151,8 +2286,9 @@
                 }
               }
             } else if (event.data.type === 'CALL_QUEUE' || event.data.type === 'voice_call') {
-              if (bcSite && !isSameSite(bcSite, currentSiteId)) {
-                console.log(`[BC VOICE IGNORED] Panggilan cabang ${bcSite} diabaikan (monitor di cabang ${currentSiteId})`);
+              // STRICT: Hanya bunyikan suara jika area panggilan 100% cocok dengan currentSiteId monitor TV
+              if (!bcSite || !isSameSite(bcSite, currentSiteId)) {
+                console.log(`[BC VOICE IGNORED] Panggilan area "${bcSite || 'tanpa-area'}" diabaikan (monitor di area "${currentSiteId}")`);
                 return;
               }
               announceVoice(event.data.text || event.data.message || 'Panggilan antrian', event.data.booking);
@@ -2161,6 +2297,16 @@
         }
       } catch (e) {}
 
+      // 2. Storage event listener untuk sinkronisasi antar-tab saat tab lain mengubah area aktif
+      window.addEventListener('storage', function(e) {
+        if (e.key === SITE_KEY || e.key === 'POLYTRON_ACTIVE_SITE_ID') {
+          if (e.newValue && e.newValue !== currentSiteId) {
+            handleTvSiteChange(e.newValue, true);
+          }
+        }
+      });
+
+      // 3. MQTT over WebSocket untuk sinkronisasi antar-perangkat berbeda
       if (typeof mqtt !== 'undefined' && mqtt.connect) {
         try {
           const brokerUrl = 'wss://broker.emqx.io:8084/mqtt';
@@ -2192,8 +2338,11 @@
               const payload = JSON.parse(message.toString());
               if (!payload) return;
 
-              // 1. Abaikan SITE_CHANGED agar monitor tetap di cabangnya sendiri
-              if (payload.type === 'SITE_CHANGED') {
+              // 1. Sinkronkan cabang jika ada siaran pergantian area dari perangkat lain
+              if (payload.type === 'SITE_CHANGED' && payload.siteId) {
+                if (payload.siteId !== currentSiteId) {
+                  handleTvSiteChange(payload.siteId, true);
+                }
                 return;
               }
 
@@ -2213,8 +2362,9 @@
 
               // 3. Panggilan Suara & Refresh Jadwal (Hanya jika cabang sama)
               if (t.endsWith('/call') || t.endsWith('/voice_call') || payload.type === 'CALL_QUEUE' || payload.type === 'voice_call') {
-                if (payloadSite && !isSameSite(payloadSite, currentSiteId)) {
-                  console.log(`[MQTT VOICE IGNORED] Panggilan cabang ${payloadSite} diabaikan (monitor cabang ${currentSiteId})`);
+                // STRICT: Hanya bunyikan suara jika area panggilan 100% cocok dengan currentSiteId monitor TV
+                if (!payloadSite || !isSameSite(payloadSite, currentSiteId)) {
+                  console.log(`[MQTT VOICE IGNORED] Panggilan area "${payloadSite || 'tanpa-area'}" diabaikan (monitor area "${currentSiteId}")`);
                   return;
                 }
                 announceVoice(payload.text || payload.message || 'Panggilan antrian', payload.booking);
@@ -2264,7 +2414,7 @@
       initRealtimeSync();
 
       setTimeout(fetchDataFromGoogleSheet, 500);
-      setInterval(fetchDataFromGoogleSheet, 15000);
+      setInterval(fetchDataFromGoogleSheet, 60000); // Tepat 1 menit sekali
 
       setTimeout(checkHostingVersionUpdate, 2000);
       setInterval(checkHostingVersionUpdate, 30000);
