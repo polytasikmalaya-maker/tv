@@ -599,6 +599,30 @@
       white-space: normal;
     }
 
+    /* KOTAK KOSONG YANG JAMNYA SUDAH TERLEWAT: GARIS & TULISAN DIBUAT TIPIS/PUDAR */
+    .tv-empty-box.is-past {
+      opacity: 0.35;
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .tv-empty-box.is-past .tv-empty-title {
+      font-weight: 500;
+      color: #94a3b8;
+    }
+
+    .tv-empty-box.is-past .tv-empty-sub {
+      font-weight: 400;
+      color: #cbd5e1;
+    }
+
+    .tv-empty-box.is-past .tv-express-slot-badge {
+      opacity: 0.5;
+      border: 1px solid #cbd5e1;
+      color: #94a3b8;
+      background: rgba(0,0,0,0.03);
+    }
+
     /* SLOT ISTIRAHAT / BREAK: JELAS & RAPI */
     .tv-break-slot {
       height: 100%;
@@ -749,6 +773,14 @@
       font-size: 0.74rem !important;
       padding: 3px 8px !important;
     }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
   </style>
 </head>
 <body>
@@ -773,10 +805,10 @@
         
         <!-- PILIHAN KATEGORI: REGULER ATAU EXPRESS -->
         <div class="tv-category-switcher">
-          <button onclick="setViewCategory('reguler')" id="btnCatReguler" class="tv-cat-btn active">
+          <button onclick="setViewCategory('reguler', true)" id="btnCatReguler" class="tv-cat-btn active">
             <span>🏍️ Reguler (Stall 1 & 2)</span>
           </button>
-          <button onclick="setViewCategory('express')" id="btnCatExpress" class="tv-cat-btn">
+          <button onclick="setViewCategory('express', true)" id="btnCatExpress" class="tv-cat-btn">
             <span>⚡ Express Bay</span>
           </button>
         </div>
@@ -820,8 +852,8 @@
             <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
             <span id="btnFsLabel">Full</span>
           </button>
-          <!-- Tombol Menu Utama -->
-          <a href="index_full_app.html" class="tv-btn" title="Buka Menu Utama">
+          <!-- Tombol Menu Utama Aplikasi Operasional -->
+          <a href="index_app.html" class="tv-btn" title="Buka Aplikasi Operasional (Portal, Booking, SA, Teknisi)">
             <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             <span>App</span>
           </a>
@@ -855,13 +887,19 @@
     <!-- 3. FOOTER STATUS BAR -->
     <footer class="tv-footer">
       <div class="tv-footer-left">
-        <span id="tvFooterHoursText">Jam operasional 08.30 – 14.30 (Sabtu sd 11.30) · Memuat cabang service...</span>
+        <span id="tvFooterHoursText">Batas booking servis 08.30 – 14.30 (Sabtu & Minggu s.d. 11.30) · Memuat cabang service...</span>
       </div>
       <div class="tv-footer-right">
         <span id="tvSlotSummaryText">Terisi: 0 Slot</span>
-        <span style="display: inline-flex; align-items: center; gap: 4px; color: #86efac;">
-          <span style="display: inline-block; width: 7px; height: 7px; border-radius: 1px; background: #86efac;"></span>
-          Realtime Active
+        <!-- Status Koneksi Realtime -->
+        <span id="tvSheetStatus" style="display: inline-flex; align-items: center; gap: 5px; color: #86efac;">
+          <span id="tvSheetDot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #86efac; box-shadow: 0 0 6px #86efac;"></span>
+          <span id="tvSheetStatusText">Terhubung</span>
+        </span>
+        <!-- Status MQTT Realtime -->
+        <span style="display: inline-flex; align-items: center; gap: 5px; color: #38bdf8;">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 6px #38bdf8;"></span>
+          <span>MQTT Live</span>
         </span>
       </div>
     </footer>
@@ -881,11 +919,12 @@
     // ==============================================================
     // KONFIGURASI UTAMA & MASTER SITES DENGAN KODE
     // ==============================================================
-    const CURRENT_APP_VERSION = '20261019_v44';
+    const CURRENT_APP_VERSION = '20261019_v51';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
     const SITE_KEY = 'POLYTRON_ACTIVE_SITE';
+    const GOOGLE_SPREADSHEET_ID = '1JmAKxJEG2TGkx2P9piXMijwhwyYbX16aVoYn4rsDcww';
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyBCztuCRN4e3CzDZOC3Q3zbNSVzb9Pbx88VWQPsoKcPfQsSC10R00pjNm_NmstrBgYqQ/exec';
     
     let SITES = [];
@@ -936,46 +975,19 @@
       if (hoursText) {
         const isTvDateSat = isSaturday(getLocalDateIso());
         hoursText.innerText = isTvDateSat 
-          ? `Jam operasional 08.30 – 11.30 (Sabtu) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}` 
-          : `Jam operasional 08.30 – 14.30 (Senin - Jumat) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}`;
+          ? `Batas booking servis 08.30 – 11.30 (Sabtu & Minggu) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}` 
+          : `Batas booking servis 08.30 – 14.30 (Senin - Jumat) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}`;
       }
 
-      if (!isRemote) {
-        // Broadcast SITE_CHANGED ke SA & Teknisi via BroadcastChannel & MQTT
-        try {
-          if ('BroadcastChannel' in window) {
-            const bc = new BroadcastChannel('polytron_ev_sync_channel');
-            bc.postMessage({ type: 'SITE_CHANGED', siteId: newSiteId, siteCode: getSiteCode(newSiteId), source: 'TV_MONITOR' });
-          }
-        } catch (e) {}
-
-        if (globalMqttClient && globalMqttClient.connected) {
-          try {
-            globalMqttClient.publish('polytron/ev/global/site_sync', JSON.stringify({
-              type: 'SITE_CHANGED',
-              siteId: newSiteId,
-              siteCode: getSiteCode(newSiteId),
-              source: 'TV_MONITOR',
-              timestamp: Date.now()
-            }));
-            globalMqttClient.publish('polytron/ev_service/data_sync', JSON.stringify({
-              type: 'SITE_CHANGED',
-              siteId: newSiteId,
-              siteCode: getSiteCode(newSiteId),
-              source: 'TV_MONITOR',
-              timestamp: Date.now()
-            }));
-          } catch (e) {}
-        }
-      }
-
+      // Pemilihan cabang Monitor TV bersifat lokal dan mandiri (tidak saling overwrite)
       renderScheduleTable();
     }
 
     // KATEGORI AKTIF: 'reguler' (Stall 1 & 2) ATAU 'express' (Express Bay: 2 slot per baris)
     let currentCategory = localStorage.getItem(CATEGORY_KEY) || 'reguler';
+    let tvCategoryRotationInterval = null;
 
-    function setViewCategory(cat) {
+    function setViewCategory(cat, isUserClick = false) {
       currentCategory = cat;
       localStorage.setItem(CATEGORY_KEY, cat);
 
@@ -1004,10 +1016,27 @@
       }
 
       renderScheduleTable();
+
+      // Jika diklik manual oleh user, reset interval rotasi 5 menit
+      if (isUserClick) {
+        startTvCategoryRotation();
+      }
     }
 
-    // AUTO-UPDATE DARI GITHUB PAGES (ANTI-STALE CACHE)
+    // ROTASI OTOMATIS BERPINDAH ANTARA REGULER DAN EXPRESS SETIAP 5 MENIT SEKALI
+    function startTvCategoryRotation() {
+      if (tvCategoryRotationInterval) {
+        clearInterval(tvCategoryRotationInterval);
+      }
+      tvCategoryRotationInterval = setInterval(function() {
+        const nextCat = currentCategory === 'reguler' ? 'express' : 'reguler';
+        setViewCategory(nextCat, false);
+      }, 5 * 60 * 1000); // 5 menit
+    }
+
+    // AUTO-UPDATE DARI GITHUB PAGES (ANTI-STALE CACHE) - TANPA AUTO-RESTART
     function checkHostingVersionUpdate() {
+      // Dinonaktifkan auto-reload paksa agar layar TV Monitor tidak berkedip atau restart sendiri
       fetch('./version.json?_t=' + Date.now(), { cache: 'no-store' })
         .then(function(res) {
           if (!res.ok) return null;
@@ -1016,29 +1045,30 @@
         .then(function(data) {
           if (data && data.version && data.version !== CURRENT_APP_VERSION) {
             console.log('[AUTO-UPDATE] Versi baru terdeteksi:', data.version);
-            if ('caches' in window) {
-              caches.keys().then(function(k) { k.forEach(function(n) { caches.delete(n); }); });
-            }
-            setTimeout(function() {
-              window.location.reload(true);
-            }, 800);
+            // Cukup perbarui data dari Google Sheet secara halus tanpa restart layar TV
+            fetchDataFromGoogleSheet();
           }
         })
         .catch(function() {});
     }
 
     // ==============================================================
-    // KETENTUAN JAM OPERASIONAL:
-    // - SABTU: HANYA SAMPAI 11.30 (3 Slot: 08.30-09.30, 09.30-10.30, 10.30-11.30)
-    // - SELAIN SABTU: SAMPAI 14.30 (6 Slot: 08.30-09.30 hingga 13.30-14.30)
+    // KETENTUAN JAM OPERASIONAL & BATAS TERAKHIR BOOKING:
+    // - DEFAULT SABTU & MINGGU: TERAKHIR JAM BOOKING 11.30 (4 Slot: 08.30 sd 11.30)
+    //   -> Jika ada inputan SA hingga 13.30, kotak 12.30 & 13.30 otomatis bertambah!
+    // - DEFAULT SENIN - JUMAT: TERAKHIR JAM BOOKING 14.30 (7 Slot: 08.30 sd 14.30)
+    //   -> Jika ada inputan SA hingga 15.30, kotak 15.30 (dan lanjutannya) otomatis bertambah!
     // ==============================================================
-    const BASE_TIME_SLOTS = [
-      { start: '08.30', end: '09.30', label: '08.30', sub: 's/d 09.30', isSat: true },
-      { start: '09.30', end: '10.30', label: '09.30', sub: 's/d 10.30', isSat: true },
-      { start: '10.30', end: '11.30', label: '10.30', sub: 's/d 11.30', isSat: true },
-      { start: '11.30', end: '12.30', label: '11.30', sub: 's/d 12.30', isSat: false },
-      { start: '12.30', end: '13.30', label: '12.30', sub: 's/d 13.30', isSat: false },
-      { start: '13.30', end: '14.30', label: '13.30', sub: 's/d 14.30', isSat: false }
+    const ALL_TV_TIME_SLOTS = [
+      { start: '08.30', end: '09.30', label: '08.30', sub: 's/d 09.30', isSatDefault: true,  isWeekdayDefault: true  },
+      { start: '09.30', end: '10.30', label: '09.30', sub: 's/d 10.30', isSatDefault: true,  isWeekdayDefault: true  },
+      { start: '10.30', end: '11.30', label: '10.30', sub: 's/d 11.30', isSatDefault: true,  isWeekdayDefault: true  },
+      { start: '11.30', end: '12.30', label: '11.30', sub: 's/d 12.30', isSatDefault: true,  isWeekdayDefault: true  },
+      { start: '12.30', end: '13.30', label: '12.30', sub: 's/d 13.30', isSatDefault: false, isWeekdayDefault: true  },
+      { start: '13.30', end: '14.30', label: '13.30', sub: 's/d 14.30', isSatDefault: false, isWeekdayDefault: true  },
+      { start: '14.30', end: '15.30', label: '14.30', sub: 's/d 15.30', isSatDefault: false, isWeekdayDefault: true  },
+      { start: '15.30', end: '16.30', label: '15.30', sub: 's/d 16.30', isSatDefault: false, isWeekdayDefault: false },
+      { start: '16.30', end: '17.30', label: '16.30', sub: 's/d 17.30', isSatDefault: false, isWeekdayDefault: false }
     ];
 
     // ==============================================================
@@ -1240,11 +1270,14 @@
 
     function isSaturday(dateStr) {
       if (!dateStr) return false;
-      const parts = dateStr.split('-');
-      if (parts.length === 3) {
-        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-        return d.getDay() === 6;
-      }
+      try {
+        const parts = String(dateStr).trim().split('-');
+        if (parts.length === 3) {
+          const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          const day = d.getDay();
+          return day === 6 || day === 0; // Sabtu (6) dan Minggu (0): operasional selesai 11.30
+        }
+      } catch(e) {}
       return false;
     }
 
@@ -1321,7 +1354,7 @@
     }
 
     function getNextRegularSlot(slotTime) {
-      const times = ['08.30', '09.30', '10.30', '11.30', '12.30', '13.30', '14.30'];
+      const times = ['08.30', '09.30', '10.30', '11.30', '12.30', '13.30', '14.30', '15.30', '16.30', '17.30'];
       const norm = String(slotTime || '').replace(':', '.');
       const idx = times.indexOf(norm);
       if (idx !== -1 && idx < times.length - 1) {
@@ -1364,7 +1397,9 @@
         const EXPRESS_SLOTS = [
           '08.30', '09.00', '09.30', '10.00',
           '10.30', '11.00', '11.30', '12.00',
-          '12.30', '13.00', '13.30', '14.00'
+          '12.30', '13.00', '13.30', '14.00',
+          '14.30', '15.00', '15.30', '16.00',
+          '16.30', '17.00'
         ];
         if (EXPRESS_SLOTS[idx] && EXPRESS_SLOTS[idx] === normTarget) {
           return true;
@@ -1418,11 +1453,34 @@
         return isSameSite(b.siteId, currentSiteId) || (b.siteCode && b.siteCode === activeCode);
       });
 
-      // Filter slot:
-      // Sabtu: 08.30 sd 11.30 (3 baris)
-      // Selain Sabtu: 08.30 sd 14.30 (6 baris)
-      let activeSlots = BASE_TIME_SLOTS.filter(function(slot) {
-        return !isTvDateSat || slot.isSat;
+      // Filter slot dinamis:
+      // - Default Senin-Jumat: 08.30 s/d 14.30 (7 slot)
+      // - Default Sabtu & Minggu: 08.30 s/d 11.30 (4 slot)
+      // - Slot Tambahan (15.30 untuk Senin-Jumat, 12.30 & 13.30 untuk Sabtu/Minggu):
+      //   Otomatis bertambah jika ADA booking / inputan SA aktif pada kategori ini!
+      //   Jika TIDAK ada booking di jam ekstra, slot tidak ditampilkan agar layar tetap rapi.
+      let activeSlots = ALL_TV_TIME_SLOTS.filter(function(slot) {
+        const isDefault = isTvDateSat ? slot.isSatDefault : slot.isWeekdayDefault;
+        if (isDefault) return true;
+
+        const expTimes = getExpressTimesForHour(slot.start);
+        const expT1 = expTimes[0];
+        const expT2 = expTimes[1];
+
+        if (currentCategory === 'reguler') {
+          return bookings.some(function(b) {
+            if (b.status === 'Batal') return false;
+            const isExp = (b.stall && b.stall.toLowerCase().includes('express')) || 
+                          (b.serviceType && b.serviceType.toLowerCase().includes('express'));
+            if (isExp) return false;
+            return isBookingInSlot(b, slot.start);
+          });
+        } else {
+          return bookings.some(function(b) {
+            if (b.status === 'Batal') return false;
+            return isExpressBookingMatch(b, expT1) || isExpressBookingMatch(b, expT2);
+          });
+        }
       });
 
       // Deteksi waktu saat ini untuk badge "SEKARANG"
@@ -1431,10 +1489,10 @@
 
       const tableBody = document.getElementById('tvTableBody');
       if (!tableBody) return;
-      tableBody.innerHTML = '';
 
       let filledCount = 0;
       let totalSlotsCount = 0;
+      let rowsHtml = '';
 
       activeSlots.forEach(function(slot) {
         const startParts = slot.start.split('.');
@@ -1442,9 +1500,6 @@
         const startMin = parseInt(startParts[0], 10) * 60 + parseInt(startParts[1], 10);
         const endMin = parseInt(endParts[0], 10) * 60 + parseInt(endParts[1], 10);
         const isCurrentTime = currentMinutes >= startMin && currentMinutes < endMin;
-
-        const rowEl = document.createElement('div');
-        rowEl.className = `tv-schedule-row ${isCurrentTime ? 'is-current-time' : ''}`;
 
         // 1. Kolom Waktu
         let nowBadgeHtml = isCurrentTime ? '<span class="tv-now-badge">SEKARANG</span>' : '';
@@ -1464,6 +1519,7 @@
           // MODE REGULER: KOTAK 1 (STALL 1) & KOTAK 2 (STALL 2)
           // ==========================================
           totalSlotsCount += 2;
+          const isSlotPast = currentMinutes >= endMin;
 
           // Kotak 1: Stall 1
           if (slot.start === '12.30' && !isTvDateSat) {
@@ -1478,7 +1534,7 @@
             } else {
               col1Html = `
                 <div class="tv-stall-cell">
-                  <div class="tv-empty-box">
+                  <div class="tv-empty-box ${isSlotPast ? 'is-past' : ''}">
                     <div class="tv-empty-inner">
                       <span class="tv-empty-title">KOSONG</span>
                       <span class="tv-empty-sub">Stall 1 Tersedia</span>
@@ -1502,7 +1558,7 @@
             } else {
               col2Html = `
                 <div class="tv-stall-cell">
-                  <div class="tv-empty-box">
+                  <div class="tv-empty-box ${isSlotPast ? 'is-past' : ''}">
                     <div class="tv-empty-inner">
                       <span class="tv-empty-title">KOSONG</span>
                       <span class="tv-empty-sub">Stall 2 Tersedia</span>
@@ -1522,6 +1578,15 @@
           const expT1 = expTimes[0];
           const expT2 = expTimes[1];
 
+          // Hitung apakah masing-masing sub-slot 30 menit sudah terlewat
+          const exp1Parts = expT1.split('.');
+          const exp1EndMin = parseInt(exp1Parts[0], 10) * 60 + parseInt(exp1Parts[1], 10) + 30;
+          const isExp1Past = currentMinutes >= exp1EndMin;
+
+          const exp2Parts = expT2.split('.');
+          const exp2EndMin = parseInt(exp2Parts[0], 10) * 60 + parseInt(exp2Parts[1], 10) + 30;
+          const isExp2Past = currentMinutes >= exp2EndMin;
+
           const bExp1 = bookings.find(function(b) {
             return isExpressBookingMatch(b, expT1) && b.status !== 'Batal';
           });
@@ -1538,7 +1603,7 @@
           } else {
             col1Html = `
               <div class="tv-stall-cell">
-                <div class="tv-empty-box">
+                <div class="tv-empty-box ${isExp1Past ? 'is-past' : ''}">
                   <div class="tv-empty-inner">
                     <span class="tv-empty-title"><span class="tv-express-slot-badge">${expT1}</span>KOSONG</span>
                     <span class="tv-empty-sub">Express Bay Tersedia</span>
@@ -1554,7 +1619,7 @@
           } else {
             col2Html = `
               <div class="tv-stall-cell">
-                <div class="tv-empty-box">
+                <div class="tv-empty-box ${isExp2Past ? 'is-past' : ''}">
                   <div class="tv-empty-inner">
                     <span class="tv-empty-title"><span class="tv-express-slot-badge">${expT2}</span>KOSONG</span>
                     <span class="tv-empty-sub">Express Bay Tersedia</span>
@@ -1565,17 +1630,21 @@
           }
         }
 
-        rowEl.innerHTML = timeColHtml + col1Html + col2Html;
-        tableBody.appendChild(rowEl);
+        const rowClass = `tv-schedule-row ${isCurrentTime ? 'is-current-time' : ''}`;
+        rowsHtml += `<div class="${rowClass}">${timeColHtml}${col1Html}${col2Html}</div>`;
       });
+
+      if (tableBody.innerHTML !== rowsHtml) {
+        tableBody.innerHTML = rowsHtml;
+      }
 
       // Update footer info dinamis sesuai site aktif
       const activeSiteObj = SITES.find(s => s.id === currentSiteId) || SITES[0];
       const hoursText = document.getElementById('tvFooterHoursText');
       if (hoursText) {
         hoursText.innerText = isTvDateSat 
-          ? `Jam operasional 08.30 – 11.30 (Sabtu) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}` 
-          : `Jam operasional 08.30 – 14.30 (Senin - Jumat) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}`;
+          ? `Batas booking servis 08.30 – 11.30 (Sabtu & Minggu) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}` 
+          : `Batas booking servis 08.30 – 14.30 (Senin - Jumat) · slot 1 jam / 30 mnt · Polytron Service Center ${activeSiteObj.name}`;
       }
 
       const summaryText = document.getElementById('tvSlotSummaryText');
@@ -1634,8 +1703,127 @@
     }
 
     // ==============================================================
-    // SINKRONISASI REALTIME DARI GOOGLE APPS SCRIPT & GVIZ SITES
+    // SINKRONISASI DATA DARI GOOGLE SPREADSHEET (ANTI-CORS JSONP)
     // ==============================================================
+    let isTvSyncingSheet = false;
+    let lastSheetSyncTime = null;
+
+    function fetchGvizJsonp(sheetName, timeoutMs = 9000) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'polyTvGvizCb_' + Math.floor(Math.random() * 1000000);
+        const script = document.createElement('script');
+        let timer = null;
+
+        function cleanup() {
+          if (timer) clearTimeout(timer);
+          try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+          if (script && script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        timer = setTimeout(() => {
+          cleanup();
+          reject(new Error(`Timeout mengambil data sheet ${sheetName}`));
+        }, timeoutMs);
+
+        window[callbackName] = function(data) {
+          cleanup();
+          if (data && data.table) {
+            resolve(data.table);
+          } else {
+            resolve(null);
+          }
+        };
+
+        script.onerror = function() {
+          cleanup();
+          reject(new Error(`Gagal memuat GViz untuk sheet ${sheetName}`));
+        };
+
+        script.src = `https://docs.google.com/spreadsheets/d/${GOOGLE_SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:${callbackName}&sheet=${encodeURIComponent(sheetName)}&_t=${Date.now()}`;
+        document.head.appendChild(script);
+      });
+    }
+
+    function extractRowsFromGvizTable(table) {
+      if (!table || !table.rows) return [];
+      return table.rows.map(r => {
+        if (!r || !r.c) return [];
+        return r.c.map(cell => (cell ? (cell.f !== undefined && cell.f !== null ? cell.f : cell.v) : ''));
+      });
+    }
+
+    function normalizeGvizDate(val, formatted) {
+      if (formatted && typeof formatted === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(formatted.trim())) {
+        return formatted.trim();
+      }
+      if (val && typeof val === 'string' && val.startsWith('Date(')) {
+        const parts = val.replace('Date(', '').replace(')', '').split(',').map(s => parseInt(s.trim(), 10));
+        if (parts.length >= 3) {
+          const y = parts[0];
+          const m = parts[1] + 1;
+          const d = parts[2];
+          return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+      }
+      if (typeof val === 'string') {
+        const str = val.trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+        const dmy = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+        if (dmy) {
+          return `${dmy[3]}-${String(dmy[2]).padStart(2, '0')}-${String(dmy[1]).padStart(2, '0')}`;
+        }
+      }
+      if (val instanceof Date) {
+        const y = val.getFullYear();
+        const m = String(val.getMonth() + 1).padStart(2, '0');
+        const d = String(val.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      return String(formatted || val || '');
+    }
+
+    function normalizeBookingData(item) {
+      if (!item) return null;
+      let s = String(item.status || 'Terjadwal').trim();
+      const sLower = s.toLowerCase();
+      if (sLower === 'selesai' || sLower === 'completed' || sLower === 'done') s = 'Selesai';
+      else if (sLower === 'dikerjakan' || sLower === 'in_progress' || sLower === 'progress' || sLower === 'in progress' || sLower === 'sedang dikerjakan') s = 'Dikerjakan';
+      else if (sLower === 'menunggu' || sLower === 'waiting' || sLower === 'antri' || sLower === 'checked in') s = 'Menunggu';
+      else if (sLower === 'qc' || sLower === 'quality control') s = 'QC';
+      else if (sLower === 'batal' || sLower === 'cancelled') s = 'Batal';
+      else s = 'Terjadwal';
+
+      const stallRaw = String(item.stall || 'stall1').toLowerCase();
+      let stall = 'stall1';
+      if (stallRaw.includes('2')) stall = 'stall2';
+      else if (stallRaw.includes('exp') || stallRaw.includes('express')) stall = 'express';
+
+      const sType = (stall === 'express' || String(item.serviceType || '').toLowerCase() === 'express') ? 'express' : 'reguler';
+      const slot = String(item.slot || '08.30').replace(':', '.');
+      const siteId = String(item.siteId || 'tasikmalaya').toLowerCase();
+
+      return {
+        id: item.id || `PLY-${Date.now()}`,
+        queueNumber: item.queueNumber || 'REG-01',
+        name: item.name || '',
+        phone: item.phone || '',
+        plate: (item.plate || '').toUpperCase(),
+        model: item.model || 'Fox-R',
+        serviceType: sType,
+        complaint: item.complaint || item.notes || '',
+        notes: item.notes || item.complaint || '',
+        stall: stall,
+        slot: slot,
+        status: s,
+        date: item.date || getLocalDateIso(),
+        siteId: siteId,
+        siteCode: item.siteCode || getSiteCode(siteId),
+        level: item.level || 'Level 1',
+        estimatedHours: item.estimatedHours || (item.level === 'Level 2' ? 2 : (item.level === 'Level 3' ? 3 : 1)),
+        secondarySlot: item.secondarySlot || ''
+      };
+    }
+
     function fetchGvizSites() {
       try {
         const script = document.createElement('script');
@@ -1689,47 +1877,135 @@
           delete window[callbackName];
           if (script.parentNode) script.parentNode.removeChild(script);
         };
-        script.src = `https://docs.google.com/spreadsheets/d/1JmAKxJEG2TGkx2P9piXMijwhwyYbX16aVoYn4rsDcww/gviz/tq?tqx=responseHandler:${callbackName}&sheet=Master_Sites&_t=${Date.now()}`;
+        script.src = `https://docs.google.com/spreadsheets/d/${GOOGLE_SPREADSHEET_ID}/gviz/tq?tqx=responseHandler:${callbackName}&sheet=Master_Sites&_t=${Date.now()}`;
         document.body.appendChild(script);
       } catch(e) {}
     }
 
-    async function fetchDataFromGoogleSheet() {
-      const gasUrl = DEFAULT_GAS_URL;
-      if (!gasUrl) return;
+    async function fetchDataFromGoogleSheet(isManual = false) {
+      if (isTvSyncingSheet) return;
+      isTvSyncingSheet = true;
 
-      let sheetRows = null;
+      const syncIcon = document.getElementById('tvSyncIcon');
+      const syncLabel = document.getElementById('tvSyncLabel');
+      const sheetStatusText = document.getElementById('tvSheetStatusText');
+      const sheetDot = document.getElementById('tvSheetDot');
+
+      if (syncIcon) syncIcon.classList.add('animate-spin');
+      if (syncLabel) syncLabel.innerText = 'Syncing...';
+      if (sheetStatusText) sheetStatusText.innerText = 'Terhubung';
+
+      let success = false;
+      let remoteBookings = [];
+
+      // 1. Ambil Data Bookings langsung dari Google Spreadsheet via GViz JSONP (Anti-CORS)
       try {
-        const res = await fetch(`${gasUrl}${gasUrl.includes('?') ? '&' : '?'}action=getData&_t=${Date.now()}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json && json.bookings) sheetRows = json.bookings;
-          if (json && json.sites && Array.isArray(json.sites) && json.sites.length > 0) {
-            SITES.length = 0;
-            json.sites.forEach(function(s) {
-              const sId = String(s.id || '').trim().toLowerCase();
-              if (!sId) return;
-              SITES.push({
-                id: sId,
-                code: (s.code || sId.substring(0, 3)).toUpperCase(),
-                name: s.name || sId,
-                address: s.address || '',
-                workDays: s.workDays || '1,2,3,4,5,6'
-              });
-            });
-            try {
-              localStorage.setItem('POLYTRON_MASTER_SITES_CACHE_V2', JSON.stringify(SITES));
-            } catch(e) {}
-            initTvSiteDropdown();
-            handleTvSiteChange(currentSiteId, true);
-          }
-        }
-      } catch (e) {}
+        const table = await fetchGvizJsonp('Bookings', 8000);
+        if (table && table.rows) {
+          const rows = extractRowsFromGvizTable(table);
+          rows.forEach((row, rIdx) => {
+            let bId = String(row[1] || '').trim();
+            const qNum = String(row[2] || '').trim();
+            const sId = String(row[3] || '').trim();
+            const dStr = normalizeGvizDate(row[4], (table.rows[rIdx] && table.rows[rIdx].c && table.rows[rIdx].c[4]) ? table.rows[rIdx].c[4].f : null);
+            const slotStr = String(row[5] || '').trim();
+            const stallStr = String(row[6] || '').trim();
+            const lvlStr = String(row[7] || '').trim();
+            const compStr = String(row[8] || '').trim();
+            const mdlStr = String(row[9] || '').trim();
+            const pltStr = String(row[10] || '').trim();
+            const nmStr = String(row[11] || '').trim();
+            const phStr = String(row[12] || '').trim();
+            const stStr = String(row[13] || '').trim();
 
-      if (sheetRows && Array.isArray(sheetRows) && sheetRows.length > 0) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sheetRows));
-        renderScheduleTable();
+            if (bId.toLowerCase() === 'bookingid' || bId.toLowerCase() === 'kode booking') return;
+
+            if (!bId && (pltStr || nmStr || dStr || qNum)) {
+              bId = `PLY-IMP-${rIdx + 1}`;
+            }
+
+            if (bId) {
+              const norm = normalizeBookingData({
+                id: bId,
+                queueNumber: qNum || `REG-${String(rIdx + 1).padStart(2, '0')}`,
+                siteId: sId,
+                date: dStr,
+                slot: slotStr,
+                stall: stallStr,
+                level: lvlStr,
+                complaint: compStr,
+                notes: compStr,
+                model: mdlStr,
+                plate: pltStr,
+                name: nmStr,
+                phone: phStr,
+                status: stStr
+              });
+              if (norm) {
+                remoteBookings.push(norm);
+              }
+            }
+          });
+          success = true;
+        }
+      } catch (errGviz) {
+        console.warn('[TV Sync] GViz Bookings terkendala:', errGviz);
       }
+
+      // 2. Fallback via GAS Web App jika GViz gagal
+      if (!success && DEFAULT_GAS_URL) {
+        try {
+          const res = await fetch(`${DEFAULT_GAS_URL}${DEFAULT_GAS_URL.includes('?') ? '&' : '?'}action=getData&_t=${Date.now()}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.bookings && Array.isArray(json.bookings)) {
+              json.bookings.forEach(b => {
+                const norm = normalizeBookingData(b);
+                if (norm) remoteBookings.push(norm);
+              });
+              success = true;
+            }
+          }
+        } catch (e) {}
+      }
+
+      // 3. Simpan dan render hasil sinkronisasi
+      if (success && remoteBookings.length > 0) {
+        lastSheetSyncTime = new Date();
+        const curJson = localStorage.getItem(STORAGE_KEY) || '[]';
+        const newJson = JSON.stringify(remoteBookings);
+        if (curJson !== newJson) {
+          localStorage.setItem(STORAGE_KEY, newJson);
+          renderScheduleTable();
+        }
+
+        if (sheetStatusText) sheetStatusText.innerText = 'Terhubung';
+        if (sheetDot) {
+          sheetDot.style.background = '#86efac';
+          sheetDot.style.boxShadow = '0 0 6px #86efac';
+        }
+
+        if (isManual) {
+          showActiveCallToast(`SINKRONISASI SUKSES: ${remoteBookings.length} DATA TERHUBUNG`);
+        }
+      } else if (!success) {
+        if (sheetStatusText) sheetStatusText.innerText = 'Terhubung';
+        if (sheetDot) {
+          sheetDot.style.background = '#f59e0b';
+          sheetDot.style.boxShadow = '0 0 6px #f59e0b';
+        }
+      }
+
+      // 4. Update Master_Sites sekalian agar cabang selalu baru
+      fetchGvizSites();
+
+      if (syncIcon) syncIcon.classList.remove('animate-spin');
+      if (syncLabel) syncLabel.innerText = 'Sync Sheet';
+      isTvSyncingSheet = false;
+    }
+
+    function manualSyncFromSheet() {
+      fetchDataFromGoogleSheet(true);
     }
 
     // ==============================================================
@@ -1805,29 +2081,31 @@
           bc.onmessage = function(event) {
             if (!event.data) return;
 
-            // Sync pergantian site aktif antar layar (Teknisi / SA / Monitor)
+            // Abaikan SITE_CHANGED agar pemilihan cabang monitor tetap independen
             if (event.data.type === 'SITE_CHANGED') {
-              if (event.data.siteId && event.data.siteId !== currentSiteId) {
-                console.log('[BroadcastChannel] Menerima perubahan site aktif:', event.data.siteId);
-                handleTvSiteChange(event.data.siteId, true);
-              }
               return;
             }
 
             // Isolasi Site: Jika antrian / event milik site lain, monitor abaikan
-            if (event.data.siteId && !isSameSite(event.data.siteId, currentSiteId)) {
-              return;
-            }
-            if (event.data.booking && event.data.booking.siteId && !isSameSite(event.data.booking.siteId, currentSiteId)) {
+            const bcSite = event.data.siteId || event.data.siteCode || (event.data.booking && (event.data.booking.siteId || event.data.booking.siteCode));
+            if (bcSite && !isSameSite(bcSite, currentSiteId)) {
               return;
             }
 
             if (event.data.type === 'BOOKING_UPDATED' || event.data.type === 'REFRESH_TV' || event.data.type === 'data_sync') {
               if (event.data.bookings && Array.isArray(event.data.bookings)) {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(event.data.bookings));
+                const oldJson = localStorage.getItem(STORAGE_KEY) || '[]';
+                const newJson = JSON.stringify(event.data.bookings);
+                if (oldJson !== newJson) {
+                  localStorage.setItem(STORAGE_KEY, newJson);
+                  renderScheduleTable();
+                }
               }
-              renderScheduleTable();
             } else if (event.data.type === 'CALL_QUEUE' || event.data.type === 'voice_call') {
+              if (bcSite && !isSameSite(bcSite, currentSiteId)) {
+                console.log(`[BC VOICE IGNORED] Panggilan cabang ${bcSite} diabaikan (monitor di cabang ${currentSiteId})`);
+                return;
+              }
               announceVoice(event.data.text || event.data.message || 'Panggilan antrian', event.data.booking);
             }
           };
@@ -1865,20 +2143,14 @@
               const payload = JSON.parse(message.toString());
               if (!payload) return;
 
-              // 1. Sync Pergantian Site
+              // 1. Abaikan SITE_CHANGED agar monitor tetap di cabangnya sendiri
               if (payload.type === 'SITE_CHANGED') {
-                if (payload.siteId && payload.siteId !== currentSiteId) {
-                  console.log('[MQTT] Sinkronisasi Site Baru Diterima:', payload.siteId);
-                  handleTvSiteChange(payload.siteId, true);
-                }
                 return;
               }
 
               // 2. Isolasi Antrian: Abaikan panggilan / data dari site lain
-              if (payload.siteId && !isSameSite(payload.siteId, currentSiteId)) {
-                return;
-              }
-              if (payload.booking && payload.booking.siteId && !isSameSite(payload.booking.siteId, currentSiteId)) {
+              const payloadSite = payload.siteId || payload.siteCode || (payload.booking && (payload.booking.siteId || payload.booking.siteCode));
+              if (payloadSite && !isSameSite(payloadSite, currentSiteId)) {
                 return;
               }
 
@@ -1890,14 +2162,22 @@
                 }
               }
 
-              // 3. Panggilan Suara & Refresh Jadwal
+              // 3. Panggilan Suara & Refresh Jadwal (Hanya jika cabang sama)
               if (t.endsWith('/call') || t.endsWith('/voice_call') || payload.type === 'CALL_QUEUE' || payload.type === 'voice_call') {
+                if (payloadSite && !isSameSite(payloadSite, currentSiteId)) {
+                  console.log(`[MQTT VOICE IGNORED] Panggilan cabang ${payloadSite} diabaikan (monitor cabang ${currentSiteId})`);
+                  return;
+                }
                 announceVoice(payload.text || payload.message || 'Panggilan antrian', payload.booking);
               } else if (t.endsWith('/sync') || t.endsWith('/data_sync') || payload.type === 'BOOKING_UPDATED' || payload.type === 'DATA_SYNC' || payload.type === 'data_sync') {
                 if (payload.bookings && Array.isArray(payload.bookings)) {
-                  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload.bookings));
+                  const oldJson = localStorage.getItem(STORAGE_KEY) || '[]';
+                  const newJson = JSON.stringify(payload.bookings);
+                  if (oldJson !== newJson) {
+                    localStorage.setItem(STORAGE_KEY, newJson);
+                    renderScheduleTable();
+                  }
                 }
-                renderScheduleTable();
               }
             } catch (e) {}
           });
@@ -1929,13 +2209,13 @@
       renderScheduleTable();
       setInterval(renderScheduleTable, 15000);
 
+      // Mulai rotasi kategori reguler & express otomatis setiap 5 menit
+      startTvCategoryRotation();
+
       initRealtimeSync();
 
-      fetchGvizSites();
-      setInterval(fetchGvizSites, 60000);
-
-      setTimeout(fetchDataFromGoogleSheet, 1500);
-      setInterval(fetchDataFromGoogleSheet, 30000);
+      setTimeout(fetchDataFromGoogleSheet, 500);
+      setInterval(fetchDataFromGoogleSheet, 15000);
 
       setTimeout(checkHostingVersionUpdate, 2000);
       setInterval(checkHostingVersionUpdate, 30000);
