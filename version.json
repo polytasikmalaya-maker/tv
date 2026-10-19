@@ -1,0 +1,5 @@
+{
+  "version": "20261019_v45",
+  "updatedAt": "2026-10-19T13:13:00+07:00",
+  "description": "Perbaikan presisi filter dropdown keluhan: murni memfilter berdasarkan judul/nama keluhan sehingga 'Servis Berkala 1.000 KM' tidak lagi salah muncul saat mencari kata kunci lain (seperti 'ban'). Serta arsitektur 2 file index mandiri yang saling terkoneksi realtime: index.html (Monitor TV) dan index_app.html (Aplikasi Operasional Booking, SA, Teknisi, & Part) dengan sinkronisasi multi-protokol (BroadcastChannel, MQTT, LocalStorage, dan Google Apps Script)."
+}
