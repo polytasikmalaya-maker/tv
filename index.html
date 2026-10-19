@@ -922,7 +922,7 @@
     // ==============================================================
     // KONFIGURASI UTAMA & MASTER SITES DENGAN KODE
     // ==============================================================
-    const CURRENT_APP_VERSION = '20261020_v84';
+    const CURRENT_APP_VERSION = '20261020_v85';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
@@ -1771,7 +1771,8 @@
         rowsHtml += `<div class="${rowClass}">${timeColHtml}${col1Html}${col2Html}</div>`;
       });
 
-      if (tableBody.innerHTML !== rowsHtml) {
+      if (tableBody.dataset.renderedHtml !== rowsHtml) {
+        tableBody.dataset.renderedHtml = rowsHtml;
         tableBody.innerHTML = rowsHtml;
       }
 
@@ -1914,6 +1915,15 @@
       return String(formatted || val || '');
     }
 
+    function getStatusRank(statusStr) {
+      const s = String(statusStr || '').toLowerCase().trim();
+      if (s.includes('selesai') || s.includes('done') || s.includes('completed')) return 4;
+      if (s.includes('dikerjakan') || s.includes('progress') || s.includes('progres') || s.includes('qc')) return 3;
+      if (s.includes('menunggu') || s.includes('checked') || s.includes('waiting')) return 2;
+      if (s.includes('batal') || s.includes('cancel')) return 5;
+      return 1;
+    }
+
     function normalizeBookingData(item) {
       if (!item) return null;
       let s = String(item.status || 'Terjadwal').trim();
@@ -2007,21 +2017,24 @@
               });
 
               if (parsedSites.length > 0) {
-                SITES.length = 0;
-                SITES.push(...parsedSites);
-                try {
-                  localStorage.setItem('POLYTRON_MASTER_SITES_CACHE_V2', JSON.stringify(SITES));
-                } catch(e) {}
-                const savedSite = localStorage.getItem(SITE_KEY) || localStorage.getItem('POLYTRON_ACTIVE_SITE_ID');
-                if (savedSite && SITES.find(s => s.id === savedSite || isSameSite(s.id, savedSite))) {
-                  const match = SITES.find(s => s.id === savedSite || isSameSite(s.id, savedSite));
-                  currentSiteId = match.id;
-                } else if (!currentSiteId || !SITES.find(s => s.id === currentSiteId || isSameSite(s.id, currentSiteId))) {
-                  const def = SITES.find(s => s.id.includes('tasik')) || SITES[0];
-                  currentSiteId = def ? def.id : '';
+                const newSitesJson = JSON.stringify(parsedSites);
+                const oldSitesJson = localStorage.getItem('POLYTRON_MASTER_SITES_CACHE_V2');
+                if (newSitesJson !== oldSitesJson) {
+                  SITES = parsedSites;
+                  try {
+                    localStorage.setItem('POLYTRON_MASTER_SITES_CACHE_V2', newSitesJson);
+                  } catch(e) {}
+                  const savedSite = localStorage.getItem(SITE_KEY) || localStorage.getItem('POLYTRON_ACTIVE_SITE_ID');
+                  if (savedSite && SITES.find(s => s.id === savedSite || isSameSite(s.id, savedSite))) {
+                    const match = SITES.find(s => s.id === savedSite || isSameSite(s.id, savedSite));
+                    currentSiteId = match.id;
+                  } else if (!currentSiteId || !SITES.find(s => s.id === currentSiteId || isSameSite(s.id, currentSiteId))) {
+                    const def = SITES.find(s => s.id.includes('tasik')) || SITES[0];
+                    currentSiteId = def ? def.id : '';
+                  }
+                  initTvSiteDropdown();
+                  handleTvSiteChange(currentSiteId, true);
                 }
-                initTvSiteDropdown();
-                handleTvSiteChange(currentSiteId, true);
               }
             }
           } catch(e) {}
@@ -2143,8 +2156,13 @@
             mergedMap.set(key, lb);
           } else if (key && mergedMap.has(key)) {
             const remote = mergedMap.get(key);
+            const localRank = getStatusRank(lb.status);
+            const remoteRank = getStatusRank(remote.status);
+            const finalStatus = (localRank > remoteRank) ? lb.status : remote.status;
+
             mergedMap.set(key, {
               ...remote,
+              status: finalStatus,
               secondarySlot: remote.secondarySlot || lb.secondarySlot || '',
               siteCode: remote.siteCode || lb.siteCode || getSiteCode(remote.siteId)
             });
