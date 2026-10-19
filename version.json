@@ -1,5 +1,5 @@
 {
-  "version": "20261020_v85",
-  "updatedAt": "2026-10-20T02:10:00+07:00",
-  "description": "Perbaikan total anti-kedip (zero-flicker) dan stabilisasi sinkronisasi data: mencegah overwrite status lokal yang lebih baru akibat jeda propagasi Google Sheet, serta menghentikan re-render DOM redundan jika data tidak berubah."
+  "version": "20261020_v86",
+  "updatedAt": "2026-10-20T02:15:00+07:00",
+  "description": "Menghapus opsi 'Kendala / Kerusakan Lainnya' pada seluruh dropdown pilihan keluhan motor agar seluruh booking terstandardisasi sesuai Master Kerusakan."
 }
