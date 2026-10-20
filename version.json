@@ -1,5 +1,5 @@
 {
-  "version": "20261021_v138",
-  "updatedAt": "2026-10-21T02:18:00+07:00",
-  "description": "Sinkronisasi master data keluhan input manual SA dengan master booking: mapping lengkap Supabase (name, level, hours, category, desc), optgroup Reguler & Express, dan penghapusan bug undefined."
+  "version": "20261021_v164",
+  "updatedAt": "2026-10-21T06:42:00+07:00",
+  "description": "Penghapusan icon lokasi pada kotak cabang di seluruh mode monitoring (EV, Elektronik, dan Dokumen), menyisakan kode cabang yang bersih, rapi, dan autofit."
 }
