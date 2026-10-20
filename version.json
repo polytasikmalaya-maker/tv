@@ -1,5 +1,5 @@
 {
-  "version": "20261021_v126",
-  "updatedAt": "2026-10-21T00:10:00+07:00",
-  "description": "Memperlambat durasi dan memperhalus gerakan animasi transisi perpindahan Reguler dan Express (fade out 0.5 detik, fade in meluncur santai 0.7 detik) sehingga tampak lebih anggun, tenang, dan nyaman dilihat di layar TV."
+  "version": "20261021_v138",
+  "updatedAt": "2026-10-21T02:18:00+07:00",
+  "description": "Sinkronisasi master data keluhan input manual SA dengan master booking: mapping lengkap Supabase (name, level, hours, category, desc), optgroup Reguler & Express, dan penghapusan bug undefined."
 }
