@@ -1788,7 +1788,7 @@
     // ==============================================================
     // KONFIGURASI UTAMA & MASTER SITES DENGAN KODE
     // ==============================================================
-    const CURRENT_APP_VERSION = '20261020_v125';
+    const CURRENT_APP_VERSION = '20261021_v126';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
@@ -2018,17 +2018,17 @@
       const isSlideLeft = (cat === 'express');
 
       if (tableBody) {
-        // FASE 1: Slide Out & Fade Lembut
-        tableBody.style.transition = 'opacity 0.26s cubic-bezier(0.4, 0, 0.2, 1), transform 0.26s cubic-bezier(0.4, 0, 0.2, 1)';
+        // FASE 1: Slide Out & Fade Lembut (Durasi Lebih Lambat, Anggun & Tenang)
+        tableBody.style.transition = 'opacity 0.45s ease-out, transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)';
         tableBody.style.opacity = '0';
-        tableBody.style.transform = isSlideLeft ? 'translateX(-36px)' : 'translateX(36px)';
+        tableBody.style.transform = isSlideLeft ? 'translateX(-48px)' : 'translateX(48px)';
 
         if (thCol1) {
-          thCol1.style.transition = 'opacity 0.2s ease';
+          thCol1.style.transition = 'opacity 0.35s ease';
           thCol1.style.opacity = '0.2';
         }
         if (thCol2) {
-          thCol2.style.transition = 'opacity 0.2s ease';
+          thCol2.style.transition = 'opacity 0.35s ease';
           thCol2.style.opacity = '0.2';
         }
 
@@ -2044,20 +2044,20 @@
 
           // FASE 2: Posisikan tabel baru di sisi sebaliknya tanpa transisi
           tableBody.style.transition = 'none';
-          tableBody.style.transform = isSlideLeft ? 'translateX(36px)' : 'translateX(-36px)';
+          tableBody.style.transform = isSlideLeft ? 'translateX(48px)' : 'translateX(-48px)';
 
           // Force reflow agar transisi berikutnya terbaca browser
           void tableBody.offsetWidth;
 
-          // FASE 3: Slide In dengan easing natural & halus (cubic-bezier)
-          tableBody.style.transition = 'opacity 0.36s cubic-bezier(0.16, 1, 0.3, 1), transform 0.36s cubic-bezier(0.16, 1, 0.3, 1)';
+          // FASE 3: Slide In dengan easing natural, santai & sangat halus
+          tableBody.style.transition = 'opacity 0.65s ease-out, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
           tableBody.style.opacity = '1';
           tableBody.style.transform = 'translateX(0)';
 
           setTimeout(function() {
             isCategorySwitching = false;
-          }, 380);
-        }, 260);
+          }, 720);
+        }, 500);
       } else {
         updateTableHeaderTitles(cat);
         renderScheduleTable(true);

@@ -1,5 +1,5 @@
 {
-  "version": "20261020_v125",
-  "updatedAt": "2026-10-20T23:48:00+07:00",
-  "description": "Mengubah interval rotasi otomatis Reguler ke Express menjadi setiap 3 menit sekali (dari sebelumnya 5 menit) dan menambahkan animasi transisi lembut (Slide & Fade) saat perpindahan kategori."
+  "version": "20261021_v126",
+  "updatedAt": "2026-10-21T00:10:00+07:00",
+  "description": "Memperlambat durasi dan memperhalus gerakan animasi transisi perpindahan Reguler dan Express (fade out 0.5 detik, fade in meluncur santai 0.7 detik) sehingga tampak lebih anggun, tenang, dan nyaman dilihat di layar TV."
 }
