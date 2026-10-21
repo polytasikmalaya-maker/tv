@@ -1,5 +1,5 @@
 {
-  "version": "20261021_v169",
-  "updatedAt": "2026-10-21T07:22:00+07:00",
-  "description": "Batas Kanan-Kiri Popup Panggilan 10mm & Ukuran Dinamis Otomatis Wrap 2 Baris jika Teks Penuh, Standarisasi Suara TTS Angka 1 Per 1, NTP Sinkronisasi Waktu Smart TV"
+  "version": "20261021_v181",
+  "updatedAt": "2026-10-21T17:30:00+07:00",
+  "description": "Standardisasi suara panggilan Text-to-Speech: Nomor polisi / plat nomor kendaraan wajib dieja lengkap huruf demi huruf dan angka demi angka satu per satu"
 }
