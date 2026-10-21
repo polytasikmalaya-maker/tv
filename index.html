@@ -24,7 +24,7 @@
 
   <!-- AUTO-UNREGISTER SERVICE WORKER & PURGE STALE CACHES -->
   <script>
-    window.CURRENT_APP_VERSION = '20261021_v168';
+    window.CURRENT_APP_VERSION = '20261021_v169';
     (function() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -1045,10 +1045,10 @@
       gap: 12px;
     }
 
-    /* TOAST FLOATING SIARAN PANGGILAN SUARA (WRAP-TEXT OTOMATIS 2/3 BARIS JIKA TEKS PANJANG) */
+    /* TOAST FLOATING SIARAN PANGGILAN SUARA (BATAS KANAN KIRI MASING-MASING 10MM, AUTO WRAP 2 BARIS & UKURAN DINAMIS) */
     #activeCallToast {
       position: absolute;
-      top: clamp(16px, 2.2vh, 26px);
+      top: clamp(14px, 2vh, 24px);
       left: 50%;
       transform: translateX(-50%) scale(1);
       background: #b91c1c;
@@ -1057,7 +1057,7 @@
       border: 2px solid #ffffff;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 20px rgba(220, 38, 38, 0.45);
       border-radius: 6px;
-      padding: clamp(10px, 1.4vh, 16px) clamp(20px, 2.4vw, 36px);
+      padding: clamp(10px, 1.4vh, 16px) clamp(16px, 10mm, 28px);
       z-index: 99999;
       display: flex;
       align-items: center;
@@ -1071,9 +1071,12 @@
       white-space: normal;
       word-break: break-word;
       overflow-wrap: break-word;
-      line-height: 1.38;
-      max-width: min(88vw, 860px);
+      line-height: 1.35;
+      /* BATAS PALING KANAN & KIRI MASING-MASING 10MM DARI TEPI LAYAR */
+      max-width: calc(100% - 20mm);
       width: max-content;
+      height: auto;
+      min-height: fit-content;
       box-sizing: border-box;
       pointer-events: auto;
       transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1081,11 +1084,13 @@
     }
 
     #activeCallToastText {
+      flex: 1 1 auto;
+      min-width: 0;
       display: inline-block;
       white-space: normal;
       word-break: break-word;
       overflow-wrap: break-word;
-      line-height: 1.38;
+      line-height: 1.35;
       text-align: center;
       max-width: 100%;
     }
@@ -2331,8 +2336,8 @@
     // ==============================================================
     var tvDisplayMode = 'ev';
     window.tvDisplayMode = tvDisplayMode;
-    const CURRENT_APP_VERSION = '20261021_v168';
-    window.CURRENT_APP_VERSION = '20261021_v168';
+    const CURRENT_APP_VERSION = '20261021_v169';
+    window.CURRENT_APP_VERSION = '20261021_v169';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';

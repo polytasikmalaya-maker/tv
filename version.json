@@ -1,5 +1,5 @@
 {
-  "version": "20261021_v168",
-  "updatedAt": "2026-10-21T07:15:00+07:00",
-  "description": "Auto Wrap-Text Notif Panggilan (2-3 baris rapi) & Standardisasi Suara TTS Sebut Angka 1 Per 1 (Anti-Juta/Triliun/Ribu, Kata Tetap Utuh Tidak Dieja)"
+  "version": "20261021_v169",
+  "updatedAt": "2026-10-21T07:22:00+07:00",
+  "description": "Batas Kanan-Kiri Popup Panggilan 10mm & Ukuran Dinamis Otomatis Wrap 2 Baris jika Teks Penuh, Standarisasi Suara TTS Angka 1 Per 1, NTP Sinkronisasi Waktu Smart TV"
 }
