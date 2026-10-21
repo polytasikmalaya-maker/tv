@@ -1,5 +1,5 @@
 {
-  "version": "20261021_v164",
-  "updatedAt": "2026-10-21T06:42:00+07:00",
-  "description": "Penghapusan icon lokasi pada kotak cabang di seluruh mode monitoring (EV, Elektronik, dan Dokumen), menyisakan kode cabang yang bersih, rapi, dan autofit."
+  "version": "20261021_v168",
+  "updatedAt": "2026-10-21T07:15:00+07:00",
+  "description": "Auto Wrap-Text Notif Panggilan (2-3 baris rapi) & Standardisasi Suara TTS Sebut Angka 1 Per 1 (Anti-Juta/Triliun/Ribu, Kata Tetap Utuh Tidak Dieja)"
 }

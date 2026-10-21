@@ -24,7 +24,7 @@
 
   <!-- AUTO-UNREGISTER SERVICE WORKER & PURGE STALE CACHES -->
   <script>
-    window.CURRENT_APP_VERSION = '20261021_v164';
+    window.CURRENT_APP_VERSION = '20261021_v168';
     (function() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -1045,7 +1045,7 @@
       gap: 12px;
     }
 
-    /* TOAST FLOATING SIARAN PANGGILAN SUARA (UKURAN PROPORSIONAL & ELEGAN DI LAYAR TV) */
+    /* TOAST FLOATING SIARAN PANGGILAN SUARA (WRAP-TEXT OTOMATIS 2/3 BARIS JIKA TEKS PANJANG) */
     #activeCallToast {
       position: absolute;
       top: clamp(16px, 2.2vh, 26px);
@@ -1057,23 +1057,37 @@
       border: 2px solid #ffffff;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 20px rgba(220, 38, 38, 0.45);
       border-radius: 6px;
-      padding: clamp(8px, 1.2vh, 14px) clamp(20px, 2.4vw, 36px);
+      padding: clamp(10px, 1.4vh, 16px) clamp(20px, 2.4vw, 36px);
       z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: clamp(10px, 1.2vw, 16px);
-      font-size: clamp(1.05rem, 1.45vw + 0.25vh, 1.55rem);
+      font-size: clamp(1rem, 1.35vw + 0.25vh, 1.45rem);
       font-weight: 900;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.025em;
       text-transform: uppercase;
       text-align: center;
-      white-space: nowrap;
-      max-width: 90%;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.38;
+      max-width: min(88vw, 860px);
+      width: max-content;
       box-sizing: border-box;
       pointer-events: auto;
       transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       animation: callToastPulse 1.8s infinite ease-in-out;
+    }
+
+    #activeCallToastText {
+      display: inline-block;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.38;
+      text-align: center;
+      max-width: 100%;
     }
 
     @keyframes callToastPulse {
@@ -2108,9 +2122,26 @@
 
       <!-- KANAN ATAS: TANGGAL & JAM (RATA KANAN, 100% AMAN DI DALAM LAYAR) -->
       <div class="tv-time-block">
-        <div id="tvDateDisplay" class="tv-date-text">SENIN, 19 OKT 2026</div>
-        <div id="tvClockDisplay" class="tv-clock-text">23:40:20</div>
+        <div id="tvDateDisplay" class="tv-date-text">--</div>
+        <div id="tvClockDisplay" class="tv-clock-text">--:--:--</div>
       </div>
+      <script>
+        (function initEarlyTvClock() {
+          try {
+            var savedOffset = parseInt(localStorage.getItem('POLYTRON_SERVER_TIME_OFFSET_MS') || '0', 10);
+            if (isNaN(savedOffset)) savedOffset = 0;
+            var now = new Date(Date.now() + savedOffset);
+            var days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
+            var months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+            var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            var wib = new Date(utc + (7 * 3600000));
+            var dEl = document.getElementById('tvDateDisplay');
+            var cEl = document.getElementById('tvClockDisplay');
+            if (dEl) dEl.innerText = days[wib.getDay()] + ', ' + wib.getDate() + ' ' + months[wib.getMonth()] + ' ' + wib.getFullYear();
+            if (cEl) cEl.innerText = String(wib.getHours()).padStart(2, '0') + ':' + String(wib.getMinutes()).padStart(2, '0') + ':' + String(wib.getSeconds()).padStart(2, '0');
+          } catch(e) {}
+        })();
+      </script>
     </header>
 
     <!-- 2. TABEL MATRIX UTAMA (EXACT 2 KOTAK PER BARIS) -->
@@ -2220,7 +2251,7 @@
       <!-- STRIP INFO BATAS BOOKING DALAM KARTU TABEL DENGAN TOMBOL KONTROL ICON (1 BARIS DENGAN KET JAM OPERASIONAL, RATA KANAN) -->
       <div class="tv-footer-hours-bar">
         <div id="tvFooterHoursText" class="tv-hours-text">
-          Batas booking servis 08.30 - 15.30 (Senin - Jumat)
+          Batas booking 08.30 – 14.30 (Senin - Jumat)
         </div>
         <div class="tv-bottom-controls">
           <!-- Pilihan Site / Cabang (Navigasi Remot: Tekan OK untuk Memutar/Ganti Cabang) -->
@@ -2229,6 +2260,10 @@
               <option value="">TSM</option>
             </select>
           </div>
+          <!-- Tombol Tes Suara Ding-Dong & Voice -->
+          <button onclick="testDingDongAndVoice()" id="btnTestVoice" tabindex="0" class="tv-icon-btn" title="Uji Suara Panggilan & Nada Ding-Dong (Klik untuk Tes)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          </button>
           <!-- Tombol Refresh / Reload Paksa (Bypass Cache Smart TV) -->
           <button onclick="forceTvHardReload()" id="btnTvReload" tabindex="0" class="tv-icon-btn" title="Muat Ulang Tampilan Terbaru (Bypass Cache Smart TV)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.85.99 6.57 2.57L21 8"/><path d="M21 3v5h-5"/></svg>
@@ -2296,12 +2331,25 @@
     // ==============================================================
     var tvDisplayMode = 'ev';
     window.tvDisplayMode = tvDisplayMode;
-    const CURRENT_APP_VERSION = '20261021_v164';
-    window.CURRENT_APP_VERSION = '20261021_v164';
+    const CURRENT_APP_VERSION = '20261021_v168';
+    window.CURRENT_APP_VERSION = '20261021_v168';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
     const SITE_KEY = 'POLYTRON_ACTIVE_SITE';
+
+    // KALIBRASI WAKTU JARINGAN (NTP VIA HTTP DATE HEADER) UNTUK SMART TV
+    let serverTimeOffsetMs = 0;
+    try {
+      const saved = parseInt(localStorage.getItem('POLYTRON_SERVER_TIME_OFFSET_MS') || '0', 10);
+      if (!isNaN(saved)) serverTimeOffsetMs = saved;
+    } catch(e) {}
+    window.serverTimeOffsetMs = serverTimeOffsetMs;
+
+    function getNow() {
+      return new Date(Date.now() + (window.serverTimeOffsetMs || 0));
+    }
+    window.getNow = getNow;
 
     // SATU-SATUNYA SUMBER DATA ADALAH SUPABASE
     // Bersihkan semua data dummy sample lama dari cache browser TV
@@ -3029,10 +3077,11 @@
       if (hoursText) {
         const isTvDateSat = isSaturday(getLocalDateIso());
         hoursText.innerText = isTvDateSat 
-          ? 'Batas booking servis 08.30 – 11.30 (Sabtu & Minggu)' 
-          : 'Batas booking servis 08.30 – 14.30 (Senin - Jumat)';
+          ? 'Batas booking 08.30 – 11.30 (Sabtu & Minggu)' 
+          : 'Batas booking 08.30 – 14.30 (Senin - Jumat)';
       }
 
+      updateLiveClock();
       renderScheduleTable();
 
       // Sinkronisasi otomatis ke aplikasi operasional (SA & Teknisi)
@@ -3200,13 +3249,28 @@
       }, 3 * 60 * 1000); // Tepat 3 menit
     }
 
-    // AUTO-UPDATE DARI GITHUB PAGES (ANTI-STALE CACHE SMART TV) DENGAN AUTO-RELOAD CERDAS
+    // AUTO-UPDATE DARI GITHUB PAGES (ANTI-STALE CACHE SMART TV) DENGAN AUTO-RELOAD CERDAS & NTP TIME CALIBRATION
     function checkHostingVersionUpdate() {
       if (window.location.protocol === 'file:' || !window.location.protocol.startsWith('http')) {
         return;
       }
-      fetch('./version.json?_t=' + Date.now(), { cache: 'no-store' })
+      const fetchStart = Date.now();
+      fetch('./version.json?_t=' + fetchStart, { cache: 'no-store' })
         .then(function(res) {
+          const dateHeader = res.headers.get('date');
+          if (dateHeader) {
+            const serverEpoch = new Date(dateHeader).getTime();
+            if (!isNaN(serverEpoch)) {
+              const fetchEnd = Date.now();
+              const rtt = Math.max(0, fetchEnd - fetchStart);
+              const accurateServerTime = serverEpoch + Math.round(rtt / 2);
+              const offset = accurateServerTime - fetchEnd;
+              if (!isNaN(offset)) {
+                window.serverTimeOffsetMs = offset;
+                try { localStorage.setItem('POLYTRON_SERVER_TIME_OFFSET_MS', String(offset)); } catch(e) {}
+              }
+            }
+          }
           if (!res.ok) return null;
           return res.json();
         })
@@ -3228,6 +3292,35 @@
         })
         .catch(function() {});
     }
+
+    // SINKRONISASI WAKTU ATOMIK SERVER (NTP VIA HTTP DATE HEADER)
+    function syncNetworkTime() {
+      if (window.location.protocol === 'file:' || !window.location.protocol.startsWith('http')) {
+        return;
+      }
+      const reqStart = Date.now();
+      fetch('./version.json?_t=' + reqStart, { method: 'HEAD', cache: 'no-store' })
+        .then(function(res) {
+          const dateHeader = res.headers.get('date');
+          if (dateHeader) {
+            const serverEpoch = new Date(dateHeader).getTime();
+            if (!isNaN(serverEpoch)) {
+              const reqEnd = Date.now();
+              const rtt = Math.max(0, reqEnd - reqStart);
+              const accurateServerTime = serverEpoch + Math.round(rtt / 2);
+              const offset = accurateServerTime - reqEnd;
+              if (!isNaN(offset)) {
+                window.serverTimeOffsetMs = offset;
+                try { localStorage.setItem('POLYTRON_SERVER_TIME_OFFSET_MS', String(offset)); } catch(e) {}
+                console.log('[Network Time Sync] Jam Smart TV berhasil dikalibrasi ke waktu server atomik. Offset:', offset, 'ms');
+                updateLiveClock();
+              }
+            }
+          }
+        })
+        .catch(function() {});
+    }
+    window.syncNetworkTime = syncNetworkTime;
 
     // FUNGSI RELOAD PAKSA DARI LAYAR TV (BYPASS CACHE)
     function forceTvHardReload() {
@@ -3367,46 +3460,52 @@
           if (!ctx) return resolve();
           if (ctx.state === 'suspended') ctx.resume().catch(function() {});
 
-          // 3 Nada Bell Bandara Harmonis & Lembut (A4 -> C#5 -> E5)
-          const tones = [
-            { freq: 440.00, time: 0.00, dur: 0.70 },
-            { freq: 554.37, time: 0.28, dur: 0.75 },
-            { freq: 659.25, time: 0.58, dur: 1.15 }
+          // NADA DING-DONG 2-NADA KLASIK BANDARA / STASIUN (E5 -> C5)
+          // Nada 1 (Ding): E5 (659.25 Hz) + Overtone Harmonis
+          // Nada 2 (Dong): C5 (523.25 Hz) + Overtone Harmonis
+          const dingDongTones = [
+            { freq: 659.25, time: 0.00, dur: 0.75, gain: 0.24 },
+            { freq: 523.25, time: 0.42, dur: 1.25, gain: 0.28 }
           ];
 
           const now = ctx.currentTime;
-          tones.forEach(function(t) {
+          dingDongTones.forEach(function(t) {
+            // Nada Fundamental Utama
             const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
+            const gainNode = ctx.createGain();
+
             osc.type = 'sine';
             osc.frequency.setValueAtTime(t.freq, now + t.time);
 
-            // Envelope lonceng lembut bandara: serangan halus (25ms), dengung alami
-            gain.gain.setValueAtTime(0.0001, now + t.time);
-            gain.gain.exponentialRampToValueAtTime(0.24, now + t.time + 0.03);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + t.time + t.dur);
+            gainNode.gain.setValueAtTime(0, now + t.time);
+            gainNode.gain.linearRampToValueAtTime(t.gain, now + t.time + 0.025);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + t.time + t.dur);
 
-            // Harmoni kedua (overtone) untuk suara lonceng tubular khas bandara
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
-            osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(t.freq * 2, now + t.time);
-            gain2.gain.setValueAtTime(0.0001, now + t.time);
-            gain2.gain.exponentialRampToValueAtTime(0.05, now + t.time + 0.02);
-            gain2.gain.exponentialRampToValueAtTime(0.0001, now + t.time + (t.dur * 0.75));
-
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc2.connect(gain2);
-            gain2.connect(ctx.destination);
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
 
             osc.start(now + t.time);
-            osc.stop(now + t.time + t.dur + 0.05);
-            osc2.start(now + t.time);
-            osc2.stop(now + t.time + t.dur + 0.05);
+            osc.stop(now + t.time + t.dur);
+
+            // Overtone Harmonis Lembut (Karakter Lonceng Tabung Akustik Mewah)
+            const harmOsc = ctx.createOscillator();
+            const harmGain = ctx.createGain();
+
+            harmOsc.type = 'triangle';
+            harmOsc.frequency.setValueAtTime(t.freq * 2, now + t.time);
+
+            harmGain.gain.setValueAtTime(0, now + t.time);
+            harmGain.gain.linearRampToValueAtTime(t.gain * 0.25, now + t.time + 0.02);
+            harmGain.gain.exponentialRampToValueAtTime(0.0001, now + t.time + t.dur * 0.7);
+
+            harmOsc.connect(harmGain);
+            harmGain.connect(ctx.destination);
+
+            harmOsc.start(now + t.time);
+            harmOsc.stop(now + t.time + t.dur * 0.7);
           });
 
-          setTimeout(resolve, 1750);
+          setTimeout(resolve, 1500);
         } catch (e) {
           resolve();
         }
@@ -3427,17 +3526,22 @@
           window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = 'id-ID';
-          utterance.rate = 0.90; // Tempo pengumuman lembut santai khas bandara
-          utterance.pitch = 1.0; // Nada lembut elegan tidak melengking
+          // SUARA WANITA CERAH, RAMAH & CERIA (Tempo Segar 1.02x, Nada Cerah 1.12)
+          utterance.rate = 1.02;
+          utterance.pitch = 1.12;
 
           const voices = window.speechSynthesis.getVoices();
-          // Prioritaskan suara perempuan ramah & halus (Gadis, Female, Google id-ID)
+          // Cari profil suara wanita Indonesia yang paling cerah, ramah, dan alami
           let idVoice = voices.find(function(v) {
-            return v.lang && (v.lang.toLowerCase().includes('id') || v.lang.toLowerCase().includes('indonesia')) && /gadis|wanita|female|google|indonesia/i.test(v.name);
+            const n = (v.name || '').toLowerCase();
+            const l = (v.lang || '').toLowerCase();
+            const isId = l.includes('id') || l.includes('indonesia');
+            return isId && (n.includes('gadis') || n.includes('female') || n.includes('wanita') || n.includes('google') || n.includes('damayanti') || n.includes('putri'));
           });
           if (!idVoice) {
             idVoice = voices.find(function(v) {
-              return v.lang && (v.lang.toLowerCase().includes('id') || v.lang.toLowerCase().includes('indonesia'));
+              const l = (v.lang || '').toLowerCase();
+              return l.includes('id') || l.includes('indonesia');
             });
           }
           if (idVoice) utterance.voice = idVoice;
@@ -3474,6 +3578,7 @@
           const clean = text.substring(0, 180);
           const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=id&client=tw-ob&q=' + encodeURIComponent(clean);
           const audio = new Audio(ttsUrl);
+          audio.playbackRate = 1.05; // Sedikit lebih cepat & segar
           currentTtsAudio = audio;
 
           let finished = false;
@@ -3506,6 +3611,43 @@
         await playTtsAudioFallback(text);
       }
     }
+
+    // PEMETAAN DIGIT SUARA (ANGKA DISEBUT 1 PER 1, ANTI SEBUTAN JUTA / TRILIUN)
+    const INDO_DIGIT_MAP = {
+      '0': 'nol',
+      '1': 'satu',
+      '2': 'dua',
+      '3': 'tiga',
+      '4': 'empat',
+      '5': 'lima',
+      '6': 'enam',
+      '7': 'tujuh',
+      '8': 'delapan',
+      '9': 'sembilan'
+    };
+
+    function formatNumbersForSpeech(rawText) {
+      if (!rawText) return '';
+      let str = String(rawText);
+
+      // 1. Bersihkan tanda strip / minus antar kode antrian atau booking agar tidak dibaca 'strip' atau 'kurang'
+      // contoh: EV-01 -> EV 01, REG-02 -> REG 02, BKG-20261021-001 -> BKG 20261021 001
+      str = str
+        .replace(/([A-Za-z0-9])\s*-\s*([A-Za-z0-9])/g, '$1 $2')
+        .replace(/([A-Za-z0-9])\s*-\s*([A-Za-z0-9])/g, '$1 $2');
+
+      // 2. Sebutkan setiap digit angka satu per satu (1 per 1),
+      // Mencegah TTS menyebutkan 'juta', 'triliun', 'miliar', atau 'ribu'.
+      // Kata-kata tetap utuh dan TIDAK dieja huruf demi huruf.
+      str = str.replace(/\d/g, function(d) {
+        return ' ' + (INDO_DIGIT_MAP[d] || d) + ' ';
+      });
+
+      // 3. Rapikan spasi berlebih dan tanda baca koma/titik
+      str = str.replace(/\s{2,}/g, ' ').replace(/\s+([,\.])/g, '$1').trim();
+      return str;
+    }
+    window.formatNumbersForSpeech = formatNumbersForSpeech;
 
     // Suara Panggilan Text-to-Speech (HANYA BUNYI TEPAT 1 KALI, TIDAK DIULANG 2X)
     async function announceVoice(text, booking) {
@@ -3576,9 +3718,14 @@
         return;
       }
 
+      // FORMAT TEKS KHUSUS SUARA TTS:
+      // Setiap angka/digit disebutkan 1 per 1 (mencegah TTS membaca juta / triliun / ribu).
+      // Kata-kata tetap utuh dan TIDAK dieja huruf demi huruf.
+      const spokenText = formatNumbersForSpeech(text);
+
       try {
         await playChime();
-        await playDualEngineVoice(text);
+        await playDualEngineVoice(spokenText);
       } catch (err) {
         console.warn('[Announce Error]', err);
       } finally {
@@ -3588,6 +3735,11 @@
           hideActiveCallToast();
         }, 500);
       }
+    }
+
+    function testDingDongAndVoice() {
+      autoUnlockAudioEngine(true);
+      announceVoice('Nomor antrian EV 01, silakan menuju ke petugas pelayanan.');
     }
 
     function formatCallToastText(b) {
@@ -3628,23 +3780,91 @@
     }
 
     // ==============================================================
-    // DATE & TIME LOGIC
+    // DATE & TIME LOGIC DENGAN ENFORCED INDONESIA TIMEZONE (WIB/WITA/WIT)
     // ==============================================================
-    function getLocalDateIso(dateObj = new Date()) {
-      try {
-        // Format ISO YYYY-MM-DD menggunakan timezone tegas Asia/Jakarta (WIB)
-        return new Intl.DateTimeFormat('en-CA', {
-          timeZone: 'Asia/Jakarta',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        }).format(dateObj);
-      } catch (e) {
-        const y = dateObj.getFullYear();
-        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const d = String(dateObj.getDate()).padStart(2, '0');
-        return y + '-' + m + '-' + d;
+    function getActiveTimezone() {
+      const site = typeof findSite === 'function' ? findSite(currentSiteId) : null;
+      const siteStr = ((site ? ((site.city || '') + ' ' + (site.name || '')) : '') + ' ' + (currentSiteId || '')).toLowerCase();
+
+      // WIT (UTC+9: Ambon, Papua, Maluku)
+      if (/\b(ambon|jayapura|papua|maluku|sorong|ternate|manokwari)\b/i.test(siteStr)) {
+        return 'Asia/Jayapura';
       }
+      // WITA (UTC+8: Bali, Denpasar, Lombok, Mataram, Makassar, Manado, Balikpapan, Samarinda, Banjarmasin, Sulawesi, NTB, NTT)
+      if (/\b(denpasar|bali|mataram|lombok|makassar|manado|balikpapan|samarinda|banjarmasin|palu|kendari|gorontalo|kupang)\b/i.test(siteStr)) {
+        return 'Asia/Makassar';
+      }
+      // WIB (UTC+7: Jakarta, Jawa, Sumatera, Kalimantan Barat & Tengah) - Default
+      return 'Asia/Jakarta';
+    }
+    window.getActiveTimezone = getActiveTimezone;
+
+    function getTimezoneCode(tz = getActiveTimezone()) {
+      if (tz === 'Asia/Jayapura') return 'WIT';
+      if (tz === 'Asia/Makassar') return 'WITA';
+      return 'WIB';
+    }
+    window.getTimezoneCode = getTimezoneCode;
+
+    function getZonedDateParts(targetDate = getNow()) {
+      const tz = getActiveTimezone();
+      try {
+        const dtf = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          hour12: false,
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
+          weekday: 'short'
+        });
+        const parts = dtf.formatToParts(targetDate);
+        const m = {};
+        for (let i = 0; i < parts.length; i++) {
+          m[parts[i].type] = parts[i].value;
+        }
+        const daysMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+        let h = parseInt(m.hour, 10);
+        if (h === 24) h = 0;
+        return {
+          year: parseInt(m.year, 10),
+          month: parseInt(m.month, 10) - 1,
+          date: parseInt(m.day, 10),
+          day: daysMap[m.weekday] !== undefined ? daysMap[m.weekday] : targetDate.getDay(),
+          hour: h,
+          minute: parseInt(m.minute, 10),
+          second: parseInt(m.second, 10),
+          timeZone: tz
+        };
+      } catch (e) {
+        // Fallback untuk browser TV lama tanpa dukungan penuh Intl timeZone
+        let offsetHours = 7;
+        if (tz === 'Asia/Makassar') offsetHours = 8;
+        else if (tz === 'Asia/Jayapura') offsetHours = 9;
+        const utcMs = targetDate.getTime() + (targetDate.getTimezoneOffset() * 60000);
+        const zoned = new Date(utcMs + (offsetHours * 3600000));
+        return {
+          year: zoned.getFullYear(),
+          month: zoned.getMonth(),
+          date: zoned.getDate(),
+          day: zoned.getDay(),
+          hour: zoned.getHours(),
+          minute: zoned.getMinutes(),
+          second: zoned.getSeconds(),
+          timeZone: tz
+        };
+      }
+    }
+    window.getZonedDateParts = getZonedDateParts;
+
+    function getLocalDateIso(dateObj = getNow()) {
+      const parts = getZonedDateParts(dateObj);
+      const y = parts.year;
+      const m = String(parts.month + 1).padStart(2, '0');
+      const d = String(parts.date).padStart(2, '0');
+      return `${y}-${m}-${d}`;
     }
 
     function normalizeDateString(rawDate) {
@@ -3698,24 +3918,32 @@
     }
 
     function updateLiveClock() {
-      const now = new Date();
+      const parts = getZonedDateParts();
       const clockEl = document.getElementById('tvClockDisplay');
       if (clockEl) {
-        const h = String(now.getHours()).padStart(2, '0');
-        const m = String(now.getMinutes()).padStart(2, '0');
-        const s = String(now.getSeconds()).padStart(2, '0');
+        const h = String(parts.hour).padStart(2, '0');
+        const m = String(parts.minute).padStart(2, '0');
+        const s = String(parts.second).padStart(2, '0');
         clockEl.innerText = `${h}:${m}:${s}`;
       }
 
       const dateEl = document.getElementById('tvDateDisplay');
       if (dateEl) {
-        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-        const dayName = days[now.getDay()];
-        const fullDate = `${dayName}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`.toUpperCase();
+        const days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
+        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+        const dayName = days[parts.day] || 'SENIN';
+        const fullDate = `${dayName}, ${parts.date} ${months[parts.month]} ${parts.year}`;
         if (dateEl.innerText !== fullDate) {
           dateEl.innerText = fullDate;
         }
+      }
+
+      // Live Clock di Top Bar HUD (Elektronik / Dokumen)
+      const hudClock = document.getElementById('tvHudClockDisplay');
+      if (hudClock) {
+        const h = String(parts.hour).padStart(2, '0');
+        const m = String(parts.minute).padStart(2, '0');
+        hudClock.innerText = `${h}:${m} ${getTimezoneCode()}`;
       }
     }
 
@@ -3932,9 +4160,9 @@
         }
       });
 
-      // Deteksi waktu saat ini untuk badge "SEKARANG"
-      const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      // Deteksi waktu saat ini untuk badge "SEKARANG" (Akurat waktu Indonesia WIB/WITA/WIT via NTP Offset)
+      const zParts = getZonedDateParts();
+      const currentMinutes = zParts.hour * 60 + zParts.minute;
 
       const tableBody = document.getElementById('tvTableBody');
       if (!tableBody) return;
@@ -4109,8 +4337,8 @@
       const hoursText = document.getElementById('tvFooterHoursText');
       if (hoursText) {
         hoursText.innerText = isTvDateSat 
-          ? 'Batas booking servis 08.30 – 11.30 (Sabtu & Minggu)' 
-          : 'Batas booking servis 08.30 – 14.30 (Senin - Jumat)';
+          ? 'Batas booking 08.30 – 11.30 (Sabtu & Minggu)' 
+          : 'Batas booking 08.30 – 14.30 (Senin - Jumat)';
       }
 
       const summaryText = document.getElementById('tvSlotSummaryText');
@@ -4251,7 +4479,7 @@
         name: b.name,
         phone: b.phone,
         status: b.status || 'Terjadwal',
-        updated_at: new Date().toISOString()
+        updated_at: getNow().toISOString()
       };
     }
 
@@ -4612,7 +4840,7 @@
     const TV_REMOTE_NAV = {
       rows: [
         ['btnCatReguler', 'btnCatExpress'],
-        ['tvSiteSelector', 'btnTvReload', 'btnRotationToggle', 'btnTvTheme', 'btnFullscreenToggle', 'btnTvMenu']
+        ['tvSiteSelector', 'btnTestVoice', 'btnTvReload', 'btnRotationToggle', 'btnTvTheme', 'btnFullscreenToggle', 'btnTvMenu']
       ],
       currentRow: 1,
       currentCol: 4, // Default fokus ke tombol Fullscreen
@@ -4877,7 +5105,7 @@
         }
         const hoursText = document.getElementById('tvFooterHoursText');
         if (hoursText) {
-          hoursText.innerText = 'Batas booking servis 08.30 - 15.30 (Senin - Jumat)';
+          hoursText.innerText = 'Batas booking 08.30 – 14.30 (Senin - Jumat)';
         }
         if (legendBar) legendBar.style.display = 'flex';
         renderScheduleTable();
@@ -5242,6 +5470,8 @@
       handleTvSiteChange(currentSiteId, true);
       setViewCategory(currentCategory);
       autoUnlockAudioEngine();
+      syncNetworkTime();
+      setInterval(syncNetworkTime, 5 * 60 * 1000);
       updateLiveClock();
       setInterval(updateLiveClock, 1000);
 
