@@ -24,7 +24,7 @@
 
   <!-- AUTO-UNREGISTER SERVICE WORKER & PURGE STALE CACHES -->
   <script>
-    window.CURRENT_APP_VERSION = '20261021_v181';
+    window.CURRENT_APP_VERSION = '20261022_v195';
     (function() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -2336,8 +2336,8 @@
     // ==============================================================
     var tvDisplayMode = 'ev';
     window.tvDisplayMode = tvDisplayMode;
-    const CURRENT_APP_VERSION = '20261021_v181';
-    window.CURRENT_APP_VERSION = '20261021_v181';
+    const CURRENT_APP_VERSION = '20261022_v186';
+    window.CURRENT_APP_VERSION = '20261022_v195';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
@@ -5184,6 +5184,36 @@
       }
     }
 
+    // Helper validasi tanggal hari ini khusus antrean TV monitor
+    function isTodayBookingTv(b, targetTodayIso) {
+      if (!b) return false;
+      const todayIso = targetTodayIso || (typeof getLocalDateIso === 'function' ? getLocalDateIso() : new Date().toISOString().split('T')[0]);
+
+      let rawDate = b.date;
+      if (!rawDate && b.created_at) rawDate = String(b.created_at).split('T')[0];
+      if (!rawDate && b.createdAt) rawDate = String(b.createdAt).split('T')[0];
+      if (!rawDate) return false;
+
+      const cleanDate = String(rawDate).split('T')[0].trim();
+      if (cleanDate === todayIso) return true;
+
+      const rawCreated = b.created_at || b.createdAt;
+      if (rawCreated) {
+        try {
+          const dObj = new Date(rawCreated);
+          if (!isNaN(dObj.getTime())) {
+            const createdIso = typeof getLocalDateIso === 'function' ? getLocalDateIso(dObj) : dObj.toISOString().split('T')[0];
+            if (createdIso === todayIso) return true;
+          }
+        } catch(e) {}
+      }
+
+      if (typeof normalizeDateString === 'function') {
+        return normalizeDateString(cleanDate) === todayIso;
+      }
+      return false;
+    }
+
     // RENDER LAYOUT 1 BARIS: KHUSUS ELEKTRONIK & DOKUMEN
     function renderQueueModeDisplay(mode) {
       const allB = loadBookings();
@@ -5210,9 +5240,9 @@
       }
 
       const items = allB.filter(function(b) {
-        const bDate = typeof normalizeDateString === 'function' ? normalizeDateString(b.date) : String(b.date || '').split('T')[0];
-        const isToday = (bDate === todayIso);
-        if (!isToday && b.status !== 'Menunggu' && b.status !== 'Dipanggil') return false;
+        // KETENTUAN USER: Monitor TV Antrean Elektronik & Dokumen HANYA mengambil data input HARI INI (today)!
+        // Data dari hari-hari sebelumnya (meskipun statusnya Menunggu/Dipanggil) WAJIB DI-SKIP!
+        if (!isTodayBookingTv(b, todayIso)) return false;
         const qNum = String(b.queueNumber || b.queue_number || '').toUpperCase();
         const idStr = String(b.id || '').toUpperCase();
         const stall = String(b.stall || '').toLowerCase();
@@ -5267,9 +5297,9 @@
         if (nameEl) nameEl.innerText = calling.name;
         if (statusEl) statusEl.innerText = 'Silahkan ke Petugas';
       } else {
-        if (numEl) numEl.innerHTML = `<span class="hud-prefix-red">${isEl ? 'EL' : 'DK'}</span><span class="hud-dash-num">-001</span>`;
-        if (nameEl) nameEl.innerText = 'ANTRIAN SAAT INI';
-        if (statusEl) statusEl.innerText = 'Silahkan ke Petugas';
+        if (numEl) numEl.innerHTML = `<span class="hud-prefix-red">${isEl ? 'EL' : 'DK'}</span><span class="hud-dash-num">---</span>`;
+        if (nameEl) nameEl.innerText = 'BELUM ADA PANGGILAN';
+        if (statusEl) statusEl.innerText = 'Loket Siap Melayani';
       }
 
       // 2. Daftar Urut Antrian Menunggu (Pill Putih Vertikal Persis Gambar)

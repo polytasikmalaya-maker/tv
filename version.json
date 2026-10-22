@@ -1,5 +1,5 @@
 {
-  "version": "20261021_v181",
-  "updatedAt": "2026-10-21T17:30:00+07:00",
-  "description": "Standardisasi suara panggilan Text-to-Speech: Nomor polisi / plat nomor kendaraan wajib dieja lengkap huruf demi huruf dan angka demi angka satu per satu"
+  "version": "20261022_v207",
+  "updatedAt": "2026-10-22T13:07:00+07:00",
+  "description": "Harmonisasi Warna Semua Menu & Modal Popup Kiosk (Check-in, Ambil Antrian, Konfirmasi Batal, Alert Dialog) Mengikuti Tema Gelap/Terang Secara Penuh dengan Pengecualian Khusus Keyboard Virtual Tetap Berwarna Gelap/Hitam"
 }
