@@ -24,7 +24,7 @@
 
   <!-- AUTO-UNREGISTER SERVICE WORKER & PURGE STALE CACHES -->
   <script>
-    window.CURRENT_APP_VERSION = '20261022_v195';
+    window.CURRENT_APP_VERSION = '20261022_v210';
     (function() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -40,7 +40,7 @@
           }
         }).catch(function() {});
       }
-      // SMART TV / ANDROID TV PROACTIVE AUTO-UPDATE CHECK
+      // SMART TV / ANDROID TV PROACTIVE AUTO-UPDATE CHECK (DENGAN ANTI-INFINITE LOOP GUARD)
       if (window.location.protocol.startsWith('http')) {
         fetch('./version.json?_t=' + Date.now(), { cache: 'no-store' })
           .then(function(res) { return res.ok ? res.json() : null; })
@@ -48,10 +48,22 @@
             if (!data || !data.version) return;
             var url = new URL(window.location.href);
             var queryVer = url.searchParams.get('v');
+            var sessionReloadedVer = '';
+            try { sessionReloadedVer = sessionStorage.getItem('TV_RELOADED_FOR_VERSION') || ''; } catch(e) {}
+
+            // PENGAMAN UTAMA SMART TV:
+            // Jika query param 'v' sudah sama dengan versi server atau sudah pernah reload untuk versi ini di session ini,
+            // JANGAN pernah reload lagi! Ini mencegah infinite refresh loop yang membuat TV crash / error 'Web page not available'.
+            if (queryVer === data.version || sessionReloadedVer === data.version) {
+              window.CURRENT_APP_VERSION = data.version;
+              return;
+            }
+
             if (window.CURRENT_APP_VERSION && window.CURRENT_APP_VERSION !== data.version) {
-              console.log('[SMART-TV-SYNC] Versi baru ditemukan:', data.version);
+              console.log('[SMART-TV-SYNC] Versi baru ditemukan:', data.version, 'vs', window.CURRENT_APP_VERSION);
+              try { sessionStorage.setItem('TV_RELOADED_FOR_VERSION', data.version); } catch(e) {}
               url.searchParams.set('v', data.version);
-              url.searchParams.set('_t', Date.now());
+              url.searchParams.delete('_t'); // Bersihkan query timestamp agar URL tetap rapi dan tidak memicu redirect berulang
               window.location.replace(url.toString());
             }
           })
@@ -2336,8 +2348,8 @@
     // ==============================================================
     var tvDisplayMode = 'ev';
     window.tvDisplayMode = tvDisplayMode;
-    const CURRENT_APP_VERSION = '20261022_v186';
-    window.CURRENT_APP_VERSION = '20261022_v195';
+    const CURRENT_APP_VERSION = '20261022_v210';
+    window.CURRENT_APP_VERSION = '20261022_v210';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
@@ -3280,19 +3292,28 @@
           return res.json();
         })
         .then(function(data) {
-          if (data && data.version && data.version !== CURRENT_APP_VERSION) {
+          if (data && data.version) {
+            var url = new URL(window.location.href);
+            var queryVer = url.searchParams.get('v');
+            var sessionReloadedVer = '';
+            try { sessionReloadedVer = sessionStorage.getItem('TV_RELOADED_FOR_VERSION') || ''; } catch(e) {}
+
+            // Anti-infinite loop guard untuk Smart TV
+            if (data.version === CURRENT_APP_VERSION || queryVer === data.version || sessionReloadedVer === data.version) {
+              return;
+            }
+
             console.log('[AUTO-UPDATE] Versi baru terdeteksi di server:', data.version, 'vs', CURRENT_APP_VERSION);
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 for (var i = 0; i < names.length; i++) caches.delete(names[i]);
               });
             }
-            try { sessionStorage.clear(); } catch(e) {}
-            // Auto reload TV dengan query param versi terbaru agar Smart TV langsung menampilkan desain terkini
-            var newUrl = new URL(window.location.href);
-            newUrl.searchParams.set('v', data.version);
-            newUrl.searchParams.set('_t', Date.now());
-            window.location.replace(newUrl.toString());
+            try { sessionStorage.setItem('TV_RELOADED_FOR_VERSION', data.version); } catch(e) {}
+            // Auto reload TV dengan query param versi terbaru agar Smart TV langsung menampilkan desain terkini tanpa loop
+            url.searchParams.set('v', data.version);
+            url.searchParams.delete('_t');
+            window.location.replace(url.toString());
           }
         })
         .catch(function() {});
@@ -3336,8 +3357,8 @@
       }
       try { sessionStorage.clear(); } catch(e) {}
       var targetUrl = new URL(window.location.href);
-      targetUrl.searchParams.set('v', '20261020_v120');
-      targetUrl.searchParams.set('_t', Date.now());
+      targetUrl.searchParams.set('v', CURRENT_APP_VERSION);
+      targetUrl.searchParams.delete('_t');
       window.location.replace(targetUrl.toString());
     }
 

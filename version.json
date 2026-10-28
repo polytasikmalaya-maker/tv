@@ -1,5 +1,5 @@
 {
-  "version": "20261022_v207",
-  "updatedAt": "2026-10-22T13:07:00+07:00",
-  "description": "Harmonisasi Warna Semua Menu & Modal Popup Kiosk (Check-in, Ambil Antrian, Konfirmasi Batal, Alert Dialog) Mengikuti Tema Gelap/Terang Secara Penuh dengan Pengecualian Khusus Keyboard Virtual Tetap Berwarna Gelap/Hitam"
+  "version": "20261022_v210",
+  "updatedAt": "2026-10-22T14:20:00+07:00",
+  "description": "Penyelarasan Validasi Anti Double-Booking Khusus Plat Nomor Motor dan Nomor WhatsApp/HP (Tanpa Validasi Nama): Pengecekan Eksklusif terhadap Nomor Plat dan Nomor HP dengan Status Aktif (Booked/Terjadwal/Checked In); Mengizinkan Pendaftaran Ulang Hanya Jika Status Done atau Batal"
 }
