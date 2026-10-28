@@ -16,6 +16,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#182842">
+  <meta name="referrer" content="no-referrer">
   
   <!-- HTTP NO-CACHE HEADERS UNTUK GITHUB PAGES (MENCEGAH STALE CACHE DI SMART TV) -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -24,7 +25,7 @@
 
   <!-- AUTO-UNREGISTER SERVICE WORKER & PURGE STALE CACHES -->
   <script>
-    window.CURRENT_APP_VERSION = '20261022_v213';
+    window.CURRENT_APP_VERSION = '20261022_v214';
     (function() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -1139,20 +1140,23 @@
     /* TOAST PENGAKTIF SUARA (JIKA AUTOPLAY DIBLOKIR BROWSER) */
     #audioUnlockToast {
       position: absolute;
-      bottom: 12px;
-      right: 14px;
-      background-color: #f59e0b;
-      color: #020617;
-      padding: 6px 14px;
-      border-radius: 3px;
-      font-size: 0.78rem;
-      font-weight: 900;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-      z-index: 9990;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #0f172a;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(245, 158, 11, 0.45);
+      z-index: 9999;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
     #audioUnlockToast.hidden {
@@ -2330,10 +2334,10 @@
 
   </div>
 
-  <!-- TOAST PENGAKTIF SUARA (AUTOPLAY TV) -->
+  <!-- TOAST PENGAKTIF SUARA (AUTOPLAY SMART TV) -->
   <div id="audioUnlockToast" class="hidden" onclick="forceUnlockAudioFromToast()">
-    <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-    <span>Klik layar untuk aktifkan suara TV</span>
+    <svg style="width: 22px; height: 22px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+    <span>Tekan OK / Sembarang Tombol Remote TV untuk Mengaktifkan Suara Panggilan</span>
   </div>
 
   </div><!-- /#tvScreenWrapper -->
@@ -2347,8 +2351,8 @@
     // ==============================================================
     var tvDisplayMode = 'ev';
     window.tvDisplayMode = tvDisplayMode;
-    const CURRENT_APP_VERSION = '20261022_v213';
-    window.CURRENT_APP_VERSION = '20261022_v213';
+    const CURRENT_APP_VERSION = '20261022_v214';
+    window.CURRENT_APP_VERSION = '20261022_v214';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
@@ -3465,7 +3469,7 @@
       if (!isSoundEnabled) return Promise.resolve();
       return new Promise(function(resolve) {
         try {
-          const ctx = getAudioContext();
+          const ctx = getAudioContext(true);
           if (!ctx) return resolve();
           if (ctx.state === 'suspended') ctx.resume().catch(function() {});
 
@@ -3612,12 +3616,39 @@
       });
     }
 
+    function hasIndonesianSpeechVoice() {
+      if (!('speechSynthesis' in window) || !window.speechSynthesis) return false;
+      try {
+        const voices = window.speechSynthesis.getVoices();
+        if (!voices || voices.length === 0) return false;
+        return voices.some(function(v) {
+          const l = (v.lang || '').toLowerCase();
+          const n = (v.name || '').toLowerCase();
+          return l.includes('id') || l.includes('indonesia') || n.includes('indonesia');
+        });
+      } catch (e) {
+        return false;
+      }
+    }
+
     async function playDualEngineVoice(text) {
-      // Prioritaskan SpeechSynthesis (native OS/Browser). Jika tidak ada barulah fallback ke audio
-      if ('speechSynthesis' in window && window.speechSynthesis) {
-        await playSpeechSynthesisLocal(text);
-      } else {
+      // 1. Cek apakah perangkat memiliki suara lokal bahasa Indonesia (Laptop/PC/Chrome)
+      if (hasIndonesianSpeechVoice()) {
+        try {
+          await playSpeechSynthesisLocal(text);
+          return;
+        } catch (e) {}
+      }
+
+      // 2. Untuk Smart TV (webOS, Tizen, Android TV) yang tidak memiliki suara Indonesia bawaan:
+      // Otomatis gunakan audio streaming MP3 Google TTS yang sangat jernih dan pasti bersuara
+      try {
         await playTtsAudioFallback(text);
+      } catch (err) {
+        // Fallback terakhir: coba SpeechSynthesis bawaan jika ada
+        if ('speechSynthesis' in window && window.speechSynthesis) {
+          try { await playSpeechSynthesisLocal(text); } catch(e) {}
+        }
       }
     }
 

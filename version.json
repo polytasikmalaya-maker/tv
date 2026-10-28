@@ -1,5 +1,5 @@
 {
-  "version": "20261022_v213",
-  "updatedAt": "2026-10-22T17:00:00+07:00",
-  "description": "Optimasi Ringan Monitor Smart TV: Menghapus SyntaxError modern JS (?.), mengganti Intl.DateTimeFormat berat dengan UTC offset super-cepat, membersihkan listener & timer fullscreen spam, serta menerapkan inisialisasi bertahap (Staggered Startup) agar jam langsung berdetik lancar, anti-hang, dan TV tidak crash/close sendiri."
+  "version": "20261022_v214",
+  "updatedAt": "2026-10-22T17:30:00+07:00",
+  "description": "Perbaikan Suara Panggilan Smart TV: Menambahkan deteksi cerdas suara bahasa Indonesia (otomatis streaming MP3 TTS jernih jika TV tidak memiliki engine suara lokal), menambahkan no-referrer policy agar Google TTS tidak diblokir 403, mengaktifkan audioContext saat pemanggilan lonceng (Ding-Dong), serta menyediakan banner notifikasi aktivasi audio remote TV yang jelas."
 }
