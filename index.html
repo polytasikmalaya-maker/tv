@@ -25,7 +25,7 @@
 
   <!-- AUTO-UNREGISTER SERVICE WORKER & PURGE STALE CACHES -->
   <script>
-    window.CURRENT_APP_VERSION = '20261022_v214';
+    window.CURRENT_APP_VERSION = '20261022_v215';
     (function() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -73,10 +73,10 @@
     })();
   </script>
 
-  <!-- MQTT.js CDN untuk Realtime Sync Antar Perangkat (Tunggal & Cepat) -->
-  <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.5/dist/mqtt.min.js"></script>
-  <!-- Supabase JS Client (Realtime Database & Egress Guard) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- MQTT.js CDN untuk Realtime Sync Antar Perangkat (Non-Blocking via defer) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/mqtt@5.3.5/dist/mqtt.min.js"></script>
+  <!-- Supabase JS Client (Realtime Database & Egress Guard - Non-Blocking via defer) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     /* ============================================================== */
@@ -1519,8 +1519,8 @@
       width: 100%;
       min-height: clamp(140px, 20vh, 185px);
       border-radius: 3px !important; /* 90 derajat tidak lancip */
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      
+      
       padding: clamp(18px, 2.5vh, 28px) 24px;
       text-align: center;
       display: flex;
@@ -2351,8 +2351,8 @@
     // ==============================================================
     var tvDisplayMode = 'ev';
     window.tvDisplayMode = tvDisplayMode;
-    const CURRENT_APP_VERSION = '20261022_v214';
-    window.CURRENT_APP_VERSION = '20261022_v214';
+    const CURRENT_APP_VERSION = '20261022_v215';
+    window.CURRENT_APP_VERSION = '20261022_v215';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
@@ -2980,7 +2980,13 @@
       const urlParams = new URLSearchParams(window.location.search);
       queryTvSiteParam = urlParams.get('site') || urlParams.get('siteId') || urlParams.get('siteCode') || '';
     } catch(e) {}
-    let currentSiteId = queryTvSiteParam || localStorage.getItem('POLYTRON_TV_SITE_ID') || (SITES.find(s => s.id.includes('tasik')) ? SITES.find(s => s.id.includes('tasik')).id : (SITES[0] ? SITES[0].id : 'tasik'));
+    let currentSiteId = queryTvSiteParam;
+    if (!currentSiteId) {
+      try { currentSiteId = localStorage.getItem('POLYTRON_TV_SITE_ID'); } catch(e) {}
+    }
+    if (!currentSiteId) {
+      currentSiteId = (SITES.find(s => s.id.includes('tasik')) ? SITES.find(s => s.id.includes('tasik')).id : (SITES[0] ? SITES[0].id : 'tasik'));
+    }
     if (queryTvSiteParam) {
       try { localStorage.setItem('POLYTRON_TV_SITE_ID', currentSiteId); } catch(e) {}
     }
@@ -3116,7 +3122,8 @@
     }
 
     // KATEGORI AKTIF: 'reguler' (Stall 1 & 2) ATAU 'express' (Express Bay: 2 slot per baris)
-    let currentCategory = localStorage.getItem(CATEGORY_KEY) || 'reguler';
+    let currentCategory = 'reguler';
+    try { currentCategory = localStorage.getItem(CATEGORY_KEY) || 'reguler'; } catch(e) {}
     let tvCategoryRotationInterval = null;
     let isInitialCategoryLoad = true;
     let isCategorySwitching = false;
@@ -4570,9 +4577,11 @@
       try {
         // Ambil data langsung dari Supabase sebagai Single Source of Truth
         // Menjamin antrian yang dihapus di database otomatis hilang dari layar monitor
+        const todayFilter = (typeof getLocalDateIso === 'function') ? getLocalDateIso() : new Date().toISOString().split('T')[0];
         const { data: rows, error: fetchErr } = await supabaseClient
           .from('bookings')
           .select('*')
+          .gte('date', todayFilter)
           .order('date', { ascending: false });
 
         if (fetchErr) throw fetchErr;
@@ -4755,7 +4764,10 @@
     // ROTASI MONITOR TV (LANDSCAPE / PORTRAIT 90° / PORTRAIT 270°)
     // ==============================================================
     const ROTATION_KEY = 'POLYTRON_TV_ROTATION';
-    let currentTvRotation = parseInt(localStorage.getItem(ROTATION_KEY) || '0', 10);
+    let currentTvRotation = 0;
+    try {
+      currentTvRotation = parseInt(localStorage.getItem(ROTATION_KEY) || '0', 10);
+    } catch(e) {}
     if (isNaN(currentTvRotation)) currentTvRotation = 0;
 
     function fitTvScreen() {
@@ -4804,7 +4816,8 @@
     // KONTROL TEMA MONITOR TV (TERANG GRADASI / AGAK GELAP)
     // ==============================================================
     const TV_THEME_KEY = 'polytron_tv_theme';
-    let currentTvTheme = localStorage.getItem(TV_THEME_KEY) || 'light';
+    let currentTvTheme = 'light';
+    try { currentTvTheme = localStorage.getItem(TV_THEME_KEY) || 'light'; } catch(e) {}
 
     function setTvTheme(theme) {
       currentTvTheme = (theme === 'dark') ? 'dark' : 'light';
@@ -4945,7 +4958,7 @@
       },
 
       move(direction) {
-        enforceAutoFullscreenAndLandscape();
+        // Navigasi fokus remot TV ringan tanpa trigger orientation/fullscreen berulang
 
         if (direction === 'left') {
           if (this.currentCol > 0) {
