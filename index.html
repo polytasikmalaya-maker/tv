@@ -24,7 +24,7 @@
 
   <!-- AUTO-UNREGISTER SERVICE WORKER & PURGE STALE CACHES -->
   <script>
-    window.CURRENT_APP_VERSION = '20261022_v210';
+    window.CURRENT_APP_VERSION = '20261022_v213';
     (function() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -72,9 +72,8 @@
     })();
   </script>
 
-  <!-- MQTT.js CDN untuk Realtime Sync Antar Perangkat -->
+  <!-- MQTT.js CDN untuk Realtime Sync Antar Perangkat (Tunggal & Cepat) -->
   <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.5/dist/mqtt.min.js"></script>
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <!-- Supabase JS Client (Realtime Database & Egress Guard) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -2348,12 +2347,12 @@
     // ==============================================================
     var tvDisplayMode = 'ev';
     window.tvDisplayMode = tvDisplayMode;
-    const CURRENT_APP_VERSION = '20261022_v210';
-    window.CURRENT_APP_VERSION = '20261022_v210';
+    const CURRENT_APP_VERSION = '20261022_v213';
+    window.CURRENT_APP_VERSION = '20261022_v213';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
-    const SITE_KEY = 'POLYTRON_ACTIVE_SITE';
+    const SITE_KEY = 'POLYTRON_TV_SITE_ID';
 
     // KALIBRASI WAKTU JARINGAN (NTP VIA HTTP DATE HEADER) UNTUK SMART TV
     let serverTimeOffsetMs = 0;
@@ -2972,7 +2971,15 @@
       }
     } catch(e) {}
 
-    let currentSiteId = localStorage.getItem(SITE_KEY) || localStorage.getItem('POLYTRON_ACTIVE_SITE_ID') || (SITES.find(s => s.id.includes('tasik')) ? SITES.find(s => s.id.includes('tasik')).id : (SITES[0] ? SITES[0].id : 'tasik'));
+    let queryTvSiteParam = '';
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      queryTvSiteParam = urlParams.get('site') || urlParams.get('siteId') || urlParams.get('siteCode') || '';
+    } catch(e) {}
+    let currentSiteId = queryTvSiteParam || localStorage.getItem('POLYTRON_TV_SITE_ID') || (SITES.find(s => s.id.includes('tasik')) ? SITES.find(s => s.id.includes('tasik')).id : (SITES[0] ? SITES[0].id : 'tasik'));
+    if (queryTvSiteParam) {
+      try { localStorage.setItem('POLYTRON_TV_SITE_ID', currentSiteId); } catch(e) {}
+    }
     let isSoundEnabled = true;
     let globalMqttClient = null;
 
@@ -3066,11 +3073,13 @@
       }
     }
 
-    function handleTvSiteChange(newSiteId, isRemote = false) {
+    function handleTvSiteChange(newSiteId) {
       if (!newSiteId) return;
       currentSiteId = newSiteId;
-      localStorage.setItem(SITE_KEY, newSiteId);
-      localStorage.setItem('POLYTRON_ACTIVE_SITE_ID', newSiteId);
+      // PENGATURAN SITE INDEPENDEN UNTUK MONITOR TV:
+      // Hanya simpan ke 'POLYTRON_TV_SITE_ID'. Tidak menimpa 'POLYTRON_ACTIVE_SITE' milik SA/Teknisi/Kiosk.
+      // Tidak menyiarkan 'SITE_CHANGED' ke perangkat lain agar setiap TV/meja bebas memilih cabangnya masing-masing.
+      localStorage.setItem('POLYTRON_TV_SITE_ID', newSiteId);
 
       // Batalkan panggilan suara aktif dan sembunyikan toast jika berganti area
       if ('speechSynthesis' in window) {
@@ -3100,32 +3109,6 @@
 
       updateLiveClock();
       renderScheduleTable();
-
-      // Sinkronisasi otomatis ke aplikasi operasional (SA & Teknisi)
-      if (!isRemote) {
-        const siteCode = getSiteCode(newSiteId);
-        const siteObj = findSite(newSiteId);
-        const payload = {
-          type: 'SITE_CHANGED',
-          siteId: newSiteId,
-          siteCode: siteCode,
-          siteName: siteObj ? siteObj.name : newSiteId,
-          timestamp: Date.now()
-        };
-
-        if (typeof BroadcastChannel !== 'undefined') {
-          try {
-            const bc = new BroadcastChannel('polytron_ev_sync_channel');
-            bc.postMessage(payload);
-          } catch (e) {}
-        }
-
-        if (globalMqttClient && globalMqttClient.connected) {
-          try {
-            globalMqttClient.publish('polytron/ev/global/site_sync', JSON.stringify(payload));
-          } catch (e) {}
-        }
-      }
     }
 
     // KATEGORI AKTIF: 'reguler' (Stall 1 & 2) ATAU 'express' (Express Bay: 2 slot per baris)
@@ -3739,6 +3722,7 @@
       if (booking) {
         const bSite = booking.siteId || booking.siteCode;
         if (bSite && !isSameSite(bSite, currentSiteId)) {
+          isTvVoiceActive = false;
           console.log(`[TV VOICE IGNORED] Panggilan area "${bSite}" diabaikan karena monitor TV berada di area "${currentSiteId}"`);
           return;
         }
@@ -3879,40 +3863,11 @@
     function getZonedDateParts(targetDate = getNow()) {
       const tz = getActiveTimezone();
       try {
-        const dtf = new Intl.DateTimeFormat('en-US', {
-          timeZone: tz,
-          hour12: false,
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-          second: 'numeric',
-          weekday: 'short'
-        });
-        const parts = dtf.formatToParts(targetDate);
-        const m = {};
-        for (let i = 0; i < parts.length; i++) {
-          m[parts[i].type] = parts[i].value;
-        }
-        const daysMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-        let h = parseInt(m.hour, 10);
-        if (h === 24) h = 0;
-        return {
-          year: parseInt(m.year, 10),
-          month: parseInt(m.month, 10) - 1,
-          date: parseInt(m.day, 10),
-          day: daysMap[m.weekday] !== undefined ? daysMap[m.weekday] : targetDate.getDay(),
-          hour: h,
-          minute: parseInt(m.minute, 10),
-          second: parseInt(m.second, 10),
-          timeZone: tz
-        };
-      } catch (e) {
-        // Fallback untuk browser TV lama tanpa dukungan penuh Intl timeZone
         let offsetHours = 7;
         if (tz === 'Asia/Makassar') offsetHours = 8;
         else if (tz === 'Asia/Jayapura') offsetHours = 9;
+        
+        // Kalkulasi waktu zona super-ringan via offset UTC (100% aman untuk semua peramban Smart TV tanpa alokasi Intl berat)
         const utcMs = targetDate.getTime() + (targetDate.getTimezoneOffset() * 60000);
         const zoned = new Date(utcMs + (offsetHours * 3600000));
         return {
@@ -3924,6 +3879,17 @@
           minute: zoned.getMinutes(),
           second: zoned.getSeconds(),
           timeZone: tz
+        };
+      } catch (e) {
+        return {
+          year: targetDate.getFullYear(),
+          month: targetDate.getMonth(),
+          date: targetDate.getDate(),
+          day: targetDate.getDay(),
+          hour: targetDate.getHours(),
+          minute: targetDate.getMinutes(),
+          second: targetDate.getSeconds(),
+          timeZone: 'Asia/Jakarta'
         };
       }
     }
@@ -4196,8 +4162,11 @@
         const qNum = String(b.queueNumber || b.queue_number || '').toUpperCase();
         const idStr = String(b.id || '').toUpperCase();
         if (stall.includes('elek') || stall.includes('electronic') || stall.includes('dok') || stall.includes('doc') || qNum.startsWith('DK') || qNum.startsWith('EL') || idStr.startsWith('DOKUMEN') || idStr.startsWith('ELEKTRONIK')) return false;
-        if (!b.siteId && !b.siteCode) return true;
-        return isSameSite(b.siteId, currentSiteId) || (b.siteCode && b.siteCode === activeCode);
+        const bSite = b.siteId || b.siteCode;
+        if (!bSite) {
+          return isSameSite('tasik', currentSiteId);
+        }
+        return isSameSite(bSite, currentSiteId) || (b.siteCode && b.siteCode === activeCode);
       });
 
       // Filter slot dinamis:
@@ -4879,6 +4848,7 @@
     }
 
     function setFullscreenState(isFs) {
+      if (typeof isTvFullscreen !== 'undefined' && isTvFullscreen === isFs) return; // Pengaman anti-render loop
       isTvFullscreen = isFs;
       const fsIcon = document.getElementById('btnFsIcon');
       const fsBtn = document.getElementById('btnFullscreenToggle');
@@ -4916,7 +4886,8 @@
       currentCol: 4, // Default fokus ke tombol Fullscreen
 
       getFocusedElement() {
-        const id = this.rows[this.currentRow]?.[this.currentCol];
+        const row = this.rows ? this.rows[this.currentRow] : null;
+        const id = (row && row[this.currentCol]) ? row[this.currentCol] : null;
         return id ? document.getElementById(id) : null;
       },
 
@@ -5277,8 +5248,11 @@
         if (mode === 'dokumen' && !isDokumen) return false;
         if (mode !== 'elektronik' && mode !== 'dokumen') return false;
 
-        if (!b.siteId && !b.siteCode) return true;
-        return isSameSite(b.siteId, currentSiteId) || (b.siteCode && b.siteCode === activeCode);
+        const bSite = b.siteId || b.siteCode;
+        if (!bSite) {
+          return isSameSite('tasik', currentSiteId);
+        }
+        return isSameSite(bSite, currentSiteId) || (b.siteCode && b.siteCode === activeCode);
       });
 
       const isEl = (mode === 'elektronik');
@@ -5392,17 +5366,14 @@
           bc.onmessage = function(event) {
             if (!event.data) return;
 
-            // Sinkronkan cabang jika tab operasional mengubah area aktif
-            if (event.data.type === 'SITE_CHANGED' && event.data.siteId) {
-              if (event.data.siteId !== currentSiteId) {
-                handleTvSiteChange(event.data.siteId, true);
-              }
+            // Abaikan siaran pergantian cabang: Pengaturan cabang Monitor TV independen per layar
+            if (event.data.type === 'SITE_CHANGED') {
               return;
             }
 
-            // Isolasi Site: Jika antrian / event milik site lain, monitor abaikan
+            // Isolasi Site Ketat: Hanya proses jika panggilan / event berasal dari site yang 100% sama dengan TV ini
             const bcSite = event.data.siteId || event.data.siteCode || (event.data.booking && (event.data.booking.siteId || event.data.booking.siteCode));
-            if (bcSite && !isSameSite(bcSite, currentSiteId)) {
+            if (!bcSite || !isSameSite(bcSite, currentSiteId)) {
               return;
             }
 
@@ -5447,11 +5418,11 @@
         }
       } catch (e) {}
 
-      // 2. Storage event listener untuk sinkronisasi antar-tab saat tab lain mengubah area aktif
+      // 2. Storage event listener khusus tab Monitor TV yang sama (tidak terpengaruh tab index_app)
       window.addEventListener('storage', function(e) {
-        if (e.key === SITE_KEY || e.key === 'POLYTRON_ACTIVE_SITE_ID') {
+        if (e.key === 'POLYTRON_TV_SITE_ID') {
           if (e.newValue && e.newValue !== currentSiteId) {
-            handleTvSiteChange(e.newValue, true);
+            handleTvSiteChange(e.newValue);
           }
         }
       });
@@ -5460,7 +5431,6 @@
       if (typeof mqtt !== 'undefined' && mqtt.connect) {
         try {
           const brokerUrl = 'wss://broker.emqx.io:8084/mqtt';
-          const topicSiteSync = 'polytron/ev/global/site_sync';
           const topicDataSync = 'polytron/ev_service/data_sync';
           const topicAllCall = 'polytron/ev/+/call';
           const topicAllSync = 'polytron/ev/+/sync';
@@ -5474,7 +5444,6 @@
 
           globalMqttClient.on('connect', function() {
             globalMqttClient.subscribe([
-              topicSiteSync,
               topicDataSync,
               topicAllCall,
               topicAllSync,
@@ -5489,17 +5458,14 @@
               const payload = JSON.parse(message.toString());
               if (!payload) return;
 
-              // 1. Sinkronkan cabang jika ada siaran pergantian area dari perangkat lain
-              if (payload.type === 'SITE_CHANGED' && payload.siteId) {
-                if (payload.siteId !== currentSiteId) {
-                  handleTvSiteChange(payload.siteId, true);
-                }
+              // Abaikan pergantian site dari perangkat lain via MQTT (setiap TV berdiri sendiri di cabangnya)
+              if (payload.type === 'SITE_CHANGED') {
                 return;
               }
 
-              // 2. Isolasi Antrian: Abaikan panggilan / data dari site lain
+              // Isolasi Antrian & Suara Ketat: Hanya terima jika site 100% sama dengan monitor TV ini
               const payloadSite = payload.siteId || payload.siteCode || (payload.booking && (payload.booking.siteId || payload.booking.siteCode));
-              if (payloadSite && !isSameSite(payloadSite, currentSiteId)) {
+              if (!payloadSite || !isSameSite(payloadSite, currentSiteId)) {
                 return;
               }
 
@@ -5559,103 +5525,103 @@
     // INISIALISASI HALAMAN
     // ==============================================================
     window.addEventListener('DOMContentLoaded', function() {
-      // Terapkan preferensi tema monitor TV (Terang Gradasi / Agak Gelap)
-      setTvTheme(currentTvTheme);
+      // 1. TAHAP PRIORITAS UTAMA (0ms - Seketika saat dibuka):
+      // Langsung hidupkan layout, tema, rotasi, dan jam detikan berdetik lancar
+      try { setTvTheme(currentTvTheme); } catch(e) {}
+      try { applyTvRotation(currentTvRotation); } catch(e) {}
+      try { initTvSiteDropdown(); } catch(e) {}
+      try { handleTvSiteChange(currentSiteId, true); } catch(e) {}
+      try { setViewCategory(currentCategory); } catch(e) {}
 
-      // Terapkan preferensi rotasi monitor TV (Landscape / Portrait)
-      applyTvRotation(currentTvRotation);
-
-      // Inisialisasi site aktif dan dropdown cabang dinamis
-      initTvSiteDropdown();
-      handleTvSiteChange(currentSiteId, true);
-      setViewCategory(currentCategory);
-      autoUnlockAudioEngine();
-      syncNetworkTime();
-      setInterval(syncNetworkTime, 5 * 60 * 1000);
-      updateLiveClock();
-      setInterval(updateLiveClock, 1000);
-
-      if (new URLSearchParams(window.location.search).get('category') === 'express' || window.location.hash.includes('express')) {
-        setViewCategory('express');
+      // Jam monitor TV langsung berjalan seketika sejak detik pertama tanpa delay
+      try {
+        updateLiveClock();
+        setInterval(updateLiveClock, 1000);
+      } catch(e) {
+        console.warn('[LiveClock Init Error]', e);
       }
 
-      // OTOMATIS LANGSUNG FULLSCREEN SAAT MASUK WEB ATAU REFRESH
-      setFullscreenState(true);
+      // Kalibrasi waktu jaringan atomik (ringan di background)
+      setTimeout(syncNetworkTime, 2000);
+      setInterval(syncNetworkTime, 5 * 60 * 1000);
 
-      function tryAutoFullscreen() {
+      // Cek query kategori jika ada
+      try {
+        if (new URLSearchParams(window.location.search).get('category') === 'express' || window.location.hash.includes('express')) {
+          setViewCategory('express');
+        }
+      } catch(e) {}
+
+      // Buka kunci audio background
+      autoUnlockAudioEngine();
+
+      // PENGAMAN FULLSCREEN SMART TV AMAN:
+      // Panggil fullscreen secara aman tanpa timer spam yang membebani browser Smart TV
+      function trySafeFullscreen() {
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
           const el = document.documentElement;
           const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
           if (rfs) {
-            rfs.call(el).then(function() {
-              setFullscreenState(true);
-            }).catch(function() {
-              setFullscreenState(true);
-            });
-          } else {
-            setFullscreenState(true);
+            try {
+              const p = rfs.call(el);
+              if (p && p.catch) p.catch(function() {});
+            } catch(e) {}
           }
         }
       }
 
-      // Jalankan fullscreen & landscape seketika saat DOM siap
-      enforceAutoFullscreenAndLandscape();
-      tryAutoFullscreen();
-      setTimeout(tryAutoFullscreen, 50);
-      setTimeout(tryAutoFullscreen, 150);
-      setTimeout(tryAutoFullscreen, 300);
-      setTimeout(tryAutoFullscreen, 600);
-      setTimeout(tryAutoFullscreen, 1200);
-      setTimeout(tryAutoFullscreen, 2500);
-
-      // Pemicu otomatis dari interaksi apa pun (gerakan mouse, remote TV, tombol panah/enter, sentuhan layar)
-      const autoFsEvents = ['mousemove', 'pointermove', 'focus', 'mouseenter', 'wheel', 'keydown', 'keyup', 'touchstart', 'pointerdown', 'click'];
-      autoFsEvents.forEach(function(evt) {
+      // Aktifkan listener interaksi layar pertama (hemat memori, auto-remove setelah 1x klik/touch)
+      ['click', 'keydown', 'touchstart'].forEach(function(evt) {
         window.addEventListener(evt, function() {
-          if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-            tryAutoFullscreen();
-          }
-        }, { passive: true });
-        document.addEventListener(evt, function() {
-          if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-            tryAutoFullscreen();
-          }
-        }, { passive: true });
+          trySafeFullscreen();
+        }, { passive: true, once: true });
       });
 
-      document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible') {
-          tryAutoFullscreen();
+      // 2. STAGGERED INITIALIZATION (Inisialisasi Bertahap Cerdas Mencegah CPU TV 100% Hang):
+      // Tahap 1 (Jeda 300ms): Jalankan Engine Mode Display & Render Jadwal dari cache lokal
+      setTimeout(function() {
+        try {
+          initTvDisplayModeEngine();
+          renderScheduleTable();
+          setInterval(renderScheduleTable, 15000);
+          startTvCategoryRotation();
+        } catch(e) {
+          console.warn('[TV Init Stage 1 Error]', e);
         }
-      });
+      }, 300);
 
-      window.addEventListener('load', function() {
-        tryAutoFullscreen();
-      });
+      // Tahap 2 (Jeda 800ms): Muat Master Sites dari Supabase
+      setTimeout(function() {
+        try {
+          syncMasterSitesFromSupabase();
+        } catch(e) {
+          console.warn('[TV Init Stage 2 Error]', e);
+        }
+      }, 800);
 
-      // Tarik master sites dari Supabase (atau cache jika sudah ada)
-      syncMasterSitesFromSupabase();
+      // Tahap 3 (Jeda 1600ms): Ambil data bookings terbaru dari Supabase & sambungkan Supabase Realtime
+      setTimeout(function() {
+        try {
+          syncFromSupabase();
+          initSupabaseRealtime();
+          runDailySupabaseKeepAlivePing();
+          setInterval(function() { syncFromSupabase(); }, 30000);
+        } catch(e) {
+          console.warn('[TV Init Stage 3 Error]', e);
+        }
+      }, 1600);
 
-      initTvDisplayModeEngine();
-      renderScheduleTable();
-      setInterval(renderScheduleTable, 15000);
+      // Tahap 4 (Jeda 2500ms): Sambungkan MQTT Broker WebSocket Realtime Sync
+      setTimeout(function() {
+        try {
+          initRealtimeSync();
+        } catch(e) {
+          console.warn('[TV Init Stage 4 Error]', e);
+        }
+      }, 2500);
 
-      // Mulai rotasi kategori reguler & express otomatis
-      startTvCategoryRotation();
-
-      initRealtimeSync();
-
-      // Inisialisasi Supabase Realtime & ambil data awal (Egress Guard)
-      syncFromSupabase();
-      initSupabaseRealtime();
-      runDailySupabaseKeepAlivePing();
-
-      // Cek berkala tiap 30 detik (Egress Guard query sangat ringan <80 byte)
-      setInterval(function() {
-        syncFromSupabase();
-      }, 30000);
-
-      setTimeout(checkHostingVersionUpdate, 2000);
+      // Tahap 5 (Jeda 5000ms): Pemeriksaan update versi hosting berkala
+      setTimeout(checkHostingVersionUpdate, 5000);
       setInterval(checkHostingVersionUpdate, 30000);
     });
   </script>

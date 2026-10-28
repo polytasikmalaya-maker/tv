@@ -1,5 +1,5 @@
 {
-  "version": "20261022_v210",
-  "updatedAt": "2026-10-22T14:20:00+07:00",
-  "description": "Penyelarasan Validasi Anti Double-Booking Khusus Plat Nomor Motor dan Nomor WhatsApp/HP (Tanpa Validasi Nama): Pengecekan Eksklusif terhadap Nomor Plat dan Nomor HP dengan Status Aktif (Booked/Terjadwal/Checked In); Mengizinkan Pendaftaran Ulang Hanya Jika Status Done atau Batal"
+  "version": "20261022_v213",
+  "updatedAt": "2026-10-22T17:00:00+07:00",
+  "description": "Optimasi Ringan Monitor Smart TV: Menghapus SyntaxError modern JS (?.), mengganti Intl.DateTimeFormat berat dengan UTC offset super-cepat, membersihkan listener & timer fullscreen spam, serta menerapkan inisialisasi bertahap (Staggered Startup) agar jam langsung berdetik lancar, anti-hang, dan TV tidak crash/close sendiri."
 }
