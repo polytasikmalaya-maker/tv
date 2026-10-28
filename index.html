@@ -25,7 +25,7 @@
 
   <!-- AUTO-UNREGISTER SERVICE WORKER & PURGE STALE CACHES -->
   <script>
-    window.CURRENT_APP_VERSION = '20261022_v215';
+    window.CURRENT_APP_VERSION = '20261022_v216';
     (function() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -2351,8 +2351,8 @@
     // ==============================================================
     var tvDisplayMode = 'ev';
     window.tvDisplayMode = tvDisplayMode;
-    const CURRENT_APP_VERSION = '20261022_v215';
-    window.CURRENT_APP_VERSION = '20261022_v215';
+    const CURRENT_APP_VERSION = '20261022_v216';
+    window.CURRENT_APP_VERSION = '20261022_v216';
     const STORAGE_KEY = 'POLYTRON_EV_BOOKINGS_V6';
     const SOUND_KEY = 'POLYTRON_SOUND_ENABLED';
     const CATEGORY_KEY = 'POLYTRON_TV_CATEGORY';
@@ -3474,11 +3474,14 @@
     // NADA CHIME BANDARA LEMBUT & MERDU (Authentic Airport Chime)
     function playChime() {
       if (!isSoundEnabled) return Promise.resolve();
-      return new Promise(function(resolve) {
+      return new Promise(async function(resolve) {
         try {
           const ctx = getAudioContext(true);
           if (!ctx) return resolve();
-          if (ctx.state === 'suspended') ctx.resume().catch(function() {});
+          // KRUSIAL UNTUK SMART TV: Tunggu hingga AudioContext resume sebelum menjadwalkan nada
+          if (ctx.state === 'suspended') {
+            try { await ctx.resume(); } catch (e) {}
+          }
 
           // NADA DING-DONG 2-NADA KLASIK BANDARA / STASIUN (E5 -> C5)
           // Nada 1 (Ding): E5 (659.25 Hz) + Overtone Harmonis
@@ -3534,14 +3537,9 @@
 
     let currentTtsAudio = null;
 
-    // FUNGSI PANGGILAN SUARA TUNGGAL (PASTIKAN HANYA 1X BUNYI, TIDAK PERNAH DIULANG 2X)
-    let isTvVoiceActive = false;
-    let lastTvVoiceCallKey = null;
-    let lastTvVoiceCallTime = 0;
-
     function playSpeechSynthesisLocal(text) {
       return new Promise(function(resolve) {
-        if (!('speechSynthesis' in window)) return resolve();
+        if (!('speechSynthesis' in window) || !window.speechSynthesis) return resolve(false);
         try {
           window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(text);
@@ -3550,8 +3548,7 @@
           utterance.rate = 1.02;
           utterance.pitch = 1.12;
 
-          const voices = window.speechSynthesis.getVoices();
-          // Cari profil suara wanita Indonesia yang paling cerah, ramah, dan alami
+          const voices = window.speechSynthesis.getVoices() || [];
           let idVoice = voices.find(function(v) {
             const n = (v.name || '').toLowerCase();
             const l = (v.lang || '').toLowerCase();
@@ -3567,23 +3564,23 @@
           if (idVoice) utterance.voice = idVoice;
 
           let done = false;
-          function finish() {
+          function finish(success) {
             if (!done) {
               done = true;
-              resolve();
+              resolve(success);
             }
           }
 
-          utterance.onend = finish;
-          utterance.onerror = finish;
+          utterance.onend = function() { finish(true); };
+          utterance.onerror = function() { finish(false); };
 
           window.speechSynthesis.speak(utterance);
 
           // Batas pengaman jika SpeechSynthesis gantung di Smart TV
-          setTimeout(finish, 12000);
+          setTimeout(function() { finish(false); }, 12000);
         } catch (e) {
           console.warn('[SpeechSynthesis Error]', e);
-          resolve();
+          resolve(false);
         }
       });
     }
@@ -3597,28 +3594,35 @@
           }
           const clean = text.substring(0, 180);
           const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=id&client=tw-ob&q=' + encodeURIComponent(clean);
-          const audio = new Audio(ttsUrl);
+          const audio = new Audio();
+          audio.src = ttsUrl;
           audio.playbackRate = 1.05; // Sedikit lebih cepat & segar
           currentTtsAudio = audio;
 
           let finished = false;
-          function done() {
+          function done(success) {
             if (!finished) {
               finished = true;
               currentTtsAudio = null;
-              resolve();
+              resolve(success);
             }
           }
 
-          audio.onended = done;
-          audio.onerror = done;
+          audio.onended = function() { done(true); };
+          audio.onerror = function(err) {
+            console.warn('[Google TTS Error]', err);
+            done(false);
+          };
           const p = audio.play();
           if (p !== undefined) {
-            p.catch(done);
+            p.catch(function(err) {
+              console.warn('[Google TTS Play Catch]', err);
+              done(false);
+            });
           }
-          setTimeout(done, 12000);
+          setTimeout(function() { done(false); }, 12000);
         } catch (e) {
-          resolve();
+          resolve(false);
         }
       });
     }
@@ -3642,19 +3646,26 @@
       // 1. Cek apakah perangkat memiliki suara lokal bahasa Indonesia (Laptop/PC/Chrome)
       if (hasIndonesianSpeechVoice()) {
         try {
-          await playSpeechSynthesisLocal(text);
-          return;
+          const ok = await playSpeechSynthesisLocal(text);
+          if (ok) return;
         } catch (e) {}
       }
 
-      // 2. Untuk Smart TV (webOS, Tizen, Android TV) yang tidak memiliki suara Indonesia bawaan:
-      // Otomatis gunakan audio streaming MP3 Google TTS yang sangat jernih dan pasti bersuara
+      // 2. Untuk Smart TV (webOS, Tizen, Android TV): Gunakan audio streaming MP3 Google TTS
+      let ttsOk = false;
       try {
-        await playTtsAudioFallback(text);
+        ttsOk = await playTtsAudioFallback(text);
       } catch (err) {
-        // Fallback terakhir: coba SpeechSynthesis bawaan jika ada
+        ttsOk = false;
+      }
+
+      // 3. Fallback jika streaming Google TTS gagal diputar di TV: Coba SpeechSynthesis bawaan
+      if (!ttsOk) {
+        console.log('[DualEngineVoice] Streaming Google TTS tidak berhasil, mencoba SpeechSynthesis browser...');
         if ('speechSynthesis' in window && window.speechSynthesis) {
-          try { await playSpeechSynthesisLocal(text); } catch(e) {}
+          try {
+            await playSpeechSynthesisLocal(text);
+          } catch(e) {}
         }
       }
     }
@@ -3734,55 +3745,97 @@
     }
     window.formatNumbersForSpeech = formatNumbersForSpeech;
 
-    // Suara Panggilan Text-to-Speech (HANYA BUNYI TEPAT 1 KALI, TIDAK DIULANG 2X)
-    async function announceVoice(text, booking) {
+    // ==============================================================
+    // SISTEM ANTREAN SUARA TV (FIFO VOICE QUEUE & ANTI-DROP ENGINE)
+    // ==============================================================
+    let tvVoiceQueue = [];
+    let isTvVoicePlaying = false;
+    let lastAnnouncedKey = '';
+    let lastAnnouncedTime = 0;
+
+    function enqueueVoiceCall(text, booking) {
       if (!text) return;
 
-      // DEDUP GUARD KETAT: Cegah panggilan ulang jika suara sedang aktif atau baru saja dipanggil (< 12 detik)
       const now = Date.now();
-      const callKey = ((booking ? (booking.id || booking.queueNumber) : '') + '_' + text).toLowerCase().trim();
-      if (isTvVoiceActive || (lastTvVoiceCallKey === callKey && (now - lastTvVoiceCallTime < 12000))) {
-        console.log('[TV Voice Ignored] Panggilan suara diabaikan agar HANYA berbunyi 1x saja.');
+      const queueKey = ((booking ? (booking.id || booking.queueNumber) : '') + '_' + text).toLowerCase().trim();
+
+      // DEBOUNCE ACCIDENTAL DOUBLE-TAP (< 2.5 detik untuk nomor yang sama)
+      if (lastAnnouncedKey === queueKey && (now - lastAnnouncedTime < 2500)) {
+        console.log('[TV Voice Debounce] Panggilan ganda terlalu cepat (<2.5s) diabaikan.');
         return;
       }
-      lastTvVoiceCallKey = callKey;
-      lastTvVoiceCallTime = now;
-      isTvVoiceActive = true;
 
-      // Hentikan suara lama yang mungkin sedang berputar
-      if ('speechSynthesis' in window) {
-        try { window.speechSynthesis.cancel(); } catch (e) {}
+      // Jika panggilan yang sama persis sudah mengantre, jangan tumpuk duplikat
+      if (tvVoiceQueue.some(function(item) { return item.key === queueKey; })) {
+        console.log('[TV Voice Queue] Panggilan yang sama sudah berada dalam antrean menunggu.');
+        return;
       }
-      if (currentTtsAudio) {
-        try { currentTtsAudio.pause(); currentTtsAudio = null; } catch (e) {}
+
+      tvVoiceQueue.push({
+        text: text,
+        booking: booking,
+        key: queueKey,
+        time: now
+      });
+
+      if (!isTvVoicePlaying) {
+        processNextVoiceInQueue();
       }
-      // STRICT FILTER AREA: Jika panggilan berasal dari area/cabang lain, abaikan total (tanpa suara & tanpa toast)
+    }
+
+    async function processNextVoiceInQueue() {
+      if (isTvVoicePlaying || tvVoiceQueue.length === 0) return;
+
+      isTvVoicePlaying = true;
+      const item = tvVoiceQueue.shift();
+      lastAnnouncedKey = item.key;
+      lastAnnouncedTime = Date.now();
+
+      try {
+        await announceVoiceSingle(item.text, item.booking);
+      } catch (err) {
+        console.warn('[TV Voice Queue Error]', err);
+      } finally {
+        isTvVoicePlaying = false;
+        // Jeda bernapas 600ms antar panggilan berikutnya
+        if (tvVoiceQueue.length > 0) {
+          setTimeout(processNextVoiceInQueue, 600);
+        }
+      }
+    }
+
+    async function announceVoiceSingle(text, booking) {
+      if (!text) return;
+
+      // 1. STRICT FILTER AREA: Jika panggilan dari area lain, abaikan total
       if (booking) {
         const bSite = booking.siteId || booking.siteCode;
         if (bSite && !isSameSite(bSite, currentSiteId)) {
-          isTvVoiceActive = false;
-          console.log(`[TV VOICE IGNORED] Panggilan area "${bSite}" diabaikan karena monitor TV berada di area "${currentSiteId}"`);
+          console.log(`[TV VOICE IGNORED] Panggilan area "${bSite}" diabaikan (monitor area "${currentSiteId}")`);
           return;
         }
       }
 
-      autoUnlockAudioEngine();
-
-      // Jika panggilan antrian berasal dari Servis Elektronik atau Dokumen, otomatis pindah ke mode tersebut
-      if (booking && (booking.stall === 'elektronik' || booking.stall === 'dokumen')) {
-        setTvDisplayMode(booking.stall);
+      // 2. Jika panggilan Elektronik atau Dokumen, otomatis pindah ke mode tersebut
+      const isEl = booking && (booking.stall === 'elektronik' || booking.category === 'elektronik' || String(booking.queueNumber || '').startsWith('EL') || String(booking.id || '').startsWith('ELEKTRONIK'));
+      const isDk = booking && (booking.stall === 'dokumen' || booking.category === 'dokumen' || String(booking.queueNumber || '').startsWith('DK') || String(booking.id || '').startsWith('DOKUMEN'));
+      if (isEl) {
+        setTvDisplayMode('elektronik');
+        resetTvRotationTimer();
+      } else if (isDk) {
+        setTvDisplayMode('dokumen');
         resetTvRotationTimer();
       }
 
-      text = text.replace(/^(panggilan\s+(selesai|kedatangan|datang)|perhatian|pendaftaran\s+walk\s*in\s*berhasil)[\.\:\,\-]?[\s]*/gi, '').trim();
-      text = text
+      // 3. Bersihkan judul dan frasa berlebih
+      let cleanText = text.replace(/^(panggilan\s+(selesai|kedatangan|datang)|perhatian|pendaftaran\s+walk\s*in\s*berhasil)[\.\:\,\-]?[\s]*/gi, '').trim();
+      cleanText = cleanText
         .replace(/motor\s+polytron\s+[a-z0-9\-]+/gi, '')
         .replace(/polytron\s+[a-z0-9\-]+/gi, '')
         .replace(/motor\s+polytron/gi, '')
         .replace(/polytron/gi, '')
         .replace(/\bmotor\s+(fox-r|fox-s|fox-500|t-rex|evo)\b/gi, '')
         .replace(/\b(fox-r|fox-s|fox-500|t-rex|evo)\b/gi, '')
-        // KOREKSI SUARA: HAPUS ISTILAH EXPRESS A / B DAN KATA "BAY" (KARENA TERDENGAR SEPERTI HURUF "B")
         .replace(/\b(?:stall\s+)?expres(?:s)?\s*(?:bay\s*)?[a-b]\b/gi, 'Stall Express')
         .replace(/\b(?:stall\s+)?expres(?:s)?\s+bay\b/gi, 'Stall Express')
         .replace(/\bstall\s+stall\s+express\b/gi, 'Stall Express')
@@ -3792,23 +3845,19 @@
         .replace(/\s{2,}/g, ' ')
         .trim();
 
-      // Tampilkan Popup Panggilan Besar
-      showActiveCallToast(booking ? formatCallToastText(booking) : text.toUpperCase());
+      // 4. Tampilkan Popup Panggilan Besar
+      showActiveCallToast(booking ? formatCallToastText(booking) : cleanText.toUpperCase());
 
       if (!isSoundEnabled) {
-        // Jika suara dinonaktifkan, beri jeda wajar 4 detik lalu sembunyikan popup
-        if (toastTimer) clearTimeout(toastTimer);
-        toastTimer = setTimeout(function() {
-          hideActiveCallToast();
-        }, 4000);
+        await new Promise(function(r) { setTimeout(r, 4000); });
+        hideActiveCallToast();
         return;
       }
 
-      // FORMAT TEKS KHUSUS SUARA TTS:
-      // Plat nomor / nopol wajib dieja lengkap huruf dan angkanya satu per satu.
-      // Angka/digit disebutkan 1 per 1 (mencegah TTS membaca juta / triliun / ribu).
+      autoUnlockAudioEngine(true);
+
       const bookingPlate = (booking && (booking.plate || booking.license_plate)) || '';
-      const spokenText = formatNumbersForSpeech(text, bookingPlate);
+      const spokenText = formatNumbersForSpeech(cleanText, bookingPlate);
 
       try {
         await playChime();
@@ -3816,13 +3865,73 @@
       } catch (err) {
         console.warn('[Announce Error]', err);
       } finally {
-        isTvVoiceActive = false;
-        // POPUP OTOMATIS HILANG BEGITU SUARA PANGGILAN SELESAI / BERHENTI (Diberi jeda halus 500ms)
         setTimeout(function() {
           hideActiveCallToast();
         }, 500);
       }
     }
+
+    // Fungsi wrapper publik kompatibel
+    function announceVoice(text, booking) {
+      enqueueVoiceCall(text, booking);
+    }
+    window.announceVoice = announceVoice;
+
+    // DEDUP HANDLER & INCOMING VOICE CALL MULTI-CHANNEL (Supabase + MQTT)
+    const processedVoiceCalls = new Map();
+
+    function handleIncomingVoiceCall(payload, source = 'unknown') {
+      if (!payload) return;
+
+      // STRICT FILTER AREA:
+      const payloadSite = payload.siteId || payload.siteCode || (payload.booking && (payload.booking.siteId || payload.booking.siteCode));
+      if (!payloadSite || !isSameSite(payloadSite, currentSiteId)) {
+        console.log(`[${source.toUpperCase()} VOICE IGNORED] Panggilan area "${payloadSite || 'unknown'}" diabaikan (monitor di area "${currentSiteId}")`);
+        return;
+      }
+
+      // DEDUP DUA JALUR (Supabase Realtime & MQTT):
+      const devId = payload.deviceId || 'dev';
+      const ts = payload.timestamp || 0;
+      const msgTxt = (payload.text || payload.message || '').trim().toLowerCase();
+      const dedupKey = devId + '_' + ts + '_' + msgTxt;
+      const now = Date.now();
+
+      if (ts > 0 && processedVoiceCalls.has(dedupKey)) {
+        console.log(`[${source.toUpperCase()} VOICE DEDUP] Pesan duplikat dari jalur lain diabaikan.`);
+        return;
+      }
+      processedVoiceCalls.set(dedupKey, now);
+
+      if (processedVoiceCalls.size > 40) {
+        for (const [k, t] of processedVoiceCalls.entries()) {
+          if (now - t > 30000) processedVoiceCalls.delete(k);
+        }
+      }
+
+      enqueueVoiceCall(payload.text || payload.message || 'Panggilan antrian', payload.booking);
+    }
+    window.handleIncomingVoiceCall = handleIncomingVoiceCall;
+
+    function handleIncomingTvMode(payload) {
+      if (!payload) return;
+      if (payload.mode) {
+        setTvDisplayMode(payload.mode);
+        resetTvRotationTimer();
+      }
+      if (payload.activeCall) {
+        const currentB = loadBookings();
+        const cIdx = currentB.findIndex(function(b) { return b.id === payload.activeCall.id; });
+        if (cIdx !== -1) {
+          currentB[cIdx] = Object.assign({}, currentB[cIdx], payload.activeCall, { status: 'Dipanggil' });
+        } else {
+          currentB.push(Object.assign({}, payload.activeCall, { status: 'Dipanggil' }));
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentB));
+        renderQueueModeDisplay(payload.mode);
+      }
+    }
+    window.handleIncomingTvMode = handleIncomingTvMode;
 
     function testDingDongAndVoice() {
       autoUnlockAudioEngine(true);
@@ -4642,16 +4751,27 @@
       syncFromSupabase(true);
     }
 
-    // REALTIME WEBSOCKET SUPABASE (Menerima perubahan baris secara instan tanpa polling!)
+    // REALTIME WEBSOCKET SUPABASE (Menerima data & broadcast suara secara instan tanpa polling!)
     function initSupabaseRealtime() {
       if (!supabaseClient) return;
 
       try {
         const channel = supabaseClient
-          .channel('public:bookings-tv')
+          .channel('polytron-voice-broadcast')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
             console.log('[Supabase Realtime TV] Event diterima:', payload.eventType, payload);
             handleSupabaseBookingChange(payload);
+          })
+          .on('broadcast', { event: 'voice_call' }, (evt) => {
+            console.log('📢 [Supabase Broadcast TV] Voice call event diterima:', evt);
+            if (evt && evt.payload) {
+              handleIncomingVoiceCall(evt.payload, 'supabase');
+            }
+          })
+          .on('broadcast', { event: 'tv_mode' }, (evt) => {
+            if (evt && evt.payload) {
+              handleIncomingTvMode(evt.payload);
+            }
           })
           .subscribe((status) => {
             console.log('[Supabase Realtime TV] Channel status:', status);
@@ -5423,21 +5543,7 @@
 
             // PERINTAH PINDAH MODE LANGSUNG DARI SERVICE ADVISOR (SA)
             if (event.data.type === 'TV_SWITCH_MODE') {
-              if (event.data.mode) {
-                setTvDisplayMode(event.data.mode);
-                resetTvRotationTimer();
-              }
-              if (event.data.activeCall) {
-                const currentB = loadBookings();
-                const cIdx = currentB.findIndex(b => b.id === event.data.activeCall.id);
-                if (cIdx !== -1) {
-                  currentB[cIdx] = Object.assign({}, currentB[cIdx], event.data.activeCall, { status: 'Dipanggil' });
-                } else {
-                  currentB.push(Object.assign({}, event.data.activeCall, { status: 'Dipanggil' }));
-                }
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(currentB));
-                renderQueueModeDisplay(event.data.mode);
-              }
+              handleIncomingTvMode(event.data);
               return;
             }
 
@@ -5451,12 +5557,7 @@
                 }
               }
             } else if (event.data.type === 'CALL_QUEUE' || event.data.type === 'voice_call') {
-              // STRICT: Hanya bunyikan suara jika area panggilan 100% cocok dengan currentSiteId monitor TV
-              if (!bcSite || !isSameSite(bcSite, currentSiteId)) {
-                console.log(`[BC VOICE IGNORED] Panggilan area "${bcSite || 'tanpa-area'}" diabaikan (monitor di area "${currentSiteId}")`);
-                return;
-              }
-              announceVoice(event.data.text || event.data.message || 'Panggilan antrian', event.data.booking);
+              handleIncomingVoiceCall(event.data, 'broadcastchannel');
             }
           };
         }
@@ -5523,32 +5624,13 @@
 
               // 2.5 Perintah Pergantian Mode TV dari SA
               if (t === 'polytron/ev_service/tv_mode' || payload.type === 'TV_SWITCH_MODE') {
-                if (payload.mode) {
-                  setTvDisplayMode(payload.mode);
-                  resetTvRotationTimer();
-                }
-                if (payload.activeCall) {
-                  const currentB = loadBookings();
-                  const cIdx = currentB.findIndex(b => b.id === payload.activeCall.id);
-                  if (cIdx !== -1) {
-                    currentB[cIdx] = Object.assign({}, currentB[cIdx], payload.activeCall, { status: 'Dipanggil' });
-                  } else {
-                    currentB.push(Object.assign({}, payload.activeCall, { status: 'Dipanggil' }));
-                  }
-                  localStorage.setItem(STORAGE_KEY, JSON.stringify(currentB));
-                  renderQueueModeDisplay(payload.mode);
-                }
+                handleIncomingTvMode(payload);
                 return;
               }
 
               // 3. Panggilan Suara & Refresh Jadwal (Hanya jika cabang sama)
               if (t.endsWith('/call') || t.endsWith('/voice_call') || payload.type === 'CALL_QUEUE' || payload.type === 'voice_call') {
-                // STRICT: Hanya bunyikan suara jika area panggilan 100% cocok dengan currentSiteId monitor TV
-                if (!payloadSite || !isSameSite(payloadSite, currentSiteId)) {
-                  console.log(`[MQTT VOICE IGNORED] Panggilan area "${payloadSite || 'tanpa-area'}" diabaikan (monitor area "${currentSiteId}")`);
-                  return;
-                }
-                announceVoice(payload.text || payload.message || 'Panggilan antrian', payload.booking);
+                handleIncomingVoiceCall(payload, 'mqtt');
               } else if (t.endsWith('/sync') || t.endsWith('/data_sync') || payload.type === 'BOOKING_UPDATED' || payload.type === 'DATA_SYNC' || payload.type === 'data_sync') {
                 if (payload.bookings && Array.isArray(payload.bookings)) {
                   const oldJson = localStorage.getItem(STORAGE_KEY) || '[]';

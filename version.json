@@ -1,5 +1,5 @@
 {
-  "version": "20261022_v215",
-  "updatedAt": "2026-10-22T18:00:00+07:00",
-  "description": "Definitive Ultra-Lightweight Smart TV Fix: Menambahkan defer pada script CDN di header agar render TV tidak terblokir, menghapus backdrop-filter blur yang memicu GPU freeze di Smart TV, menghapus requestFullscreen/orientation lock berulang dari navigasi remote, memproteksi akses localStorage dengan try-catch aman, serta memfilter query Supabase hanya untuk booking aktif hari ini guna menghemat alokasi memori TV."
+  "version": "20261022_v216",
+  "updatedAt": "2026-10-28T15:25:00+07:00",
+  "description": "Definitive TV Voice Consistency & Dual-Channel Realtime Engine: Menerapkan dual-channel broadcast (Supabase Realtime TLS WebSocket 99.9% + MQTT) untuk menjamin panggilan HP ke TV tidak pernah hilang di jalan, memangkas debounce ke 2.5 detik agar panggilan ulang cepat tidak diabaikan, mengimplementasikan antrean suara FIFO (anti-drop) jika beberapa panggilan masuk bersamaan, memastikan AudioContext resume di Smart TV sebelum nada ding-dong dimainkan, serta multi-tier TTS fallback (Google TTS streaming ke browser SpeechSynthesis)."
 }
