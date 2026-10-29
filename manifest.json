@@ -1,6 +1,6 @@
 {
-  "name": "Status Service Motor Listrik - POLYTRON EV",
-  "short_name": "Polytron EV",
+  "name": "Status Service Motor Listrik - POLYTRON EV TV Monitor",
+  "short_name": "TV Monitor EV",
   "start_url": "./index.html",
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone", "minimal-ui"],

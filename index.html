@@ -2304,10 +2304,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
             </span>
           </button>
-          <!-- Tombol Menu Utama Aplikasi Operasional (Portal, Booking, SA, Teknisi) -->
-          <a href="index_app.html" id="btnTvMenu" tabindex="0" class="tv-icon-btn" title="Buka Menu Utama Aplikasi Operasional">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          </a>
+          <!-- Mode Standalone Monitor TV (Hosting Terpisah) -->
         </div>
       </div>
 
@@ -5044,7 +5041,7 @@
     const TV_REMOTE_NAV = {
       rows: [
         ['btnCatReguler', 'btnCatExpress'],
-        ['tvSiteSelector', 'btnTestVoice', 'btnTvReload', 'btnRotationToggle', 'btnTvTheme', 'btnFullscreenToggle', 'btnTvMenu']
+        ['tvSiteSelector', 'btnTestVoice', 'btnTvReload', 'btnRotationToggle', 'btnTvTheme', 'btnFullscreenToggle']
       ],
       currentRow: 1,
       currentCol: 4, // Default fokus ke tombol Fullscreen
@@ -5117,8 +5114,7 @@
 
         if (el.id === 'tvSiteSelector') {
           cycleNextTvSite();
-        } else if (el.id === 'btnTvMenu') {
-          window.location.href = 'index_app.html';
+
         } else {
           el.click();
         }
